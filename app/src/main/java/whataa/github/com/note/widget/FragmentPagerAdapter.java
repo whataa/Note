@@ -19,6 +19,7 @@ package whataa.github.com.note.widget;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.os.Build;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
@@ -26,44 +27,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 /**
- * Implementation of {@link android.support.v4.view.PagerAdapter} that
- * represents each page as a {@link Fragment} that is persistently
- * kept in the fragment manager as long as the user can return to the page.
- *
- * <p>This version of the pager is best for use when there are a handful of
- * typically more static fragments to be paged through, such as a set of tabs.
- * The fragment of each page the user visits will be kept in memory, though its
- * view hierarchy may be destroyed when not visible.  This can result in using
- * a significant amount of memory since fragment instances can hold on to an
- * arbitrary amount of state.  For larger sets of pages, consider
- * {FragmentStatePagerAdapter}.
- *
- * <p>When using FragmentPagerAdapter the host ViewPager must have a
- * valid ID set.</p>
- *
- * <p>Subclasses only need to implement {@link #getItem(int)}
- * and {@link #getCount()} to have a working adapter.
- *
- * <p>Here is an example implementation of a pager containing fragments of
- * lists:
- *
- * {@sample development/samples/Support4Demos/src/com/example/android/supportv4/app/FragmentPagerSupport.java
- *      complete}
- *
- * <p>The <code>R.layout.fragment_pager</code> resource of the top-level fragment is:
- *
- * {@sample development/samples/Support4Demos/res/layout/fragment_pager.xml
- *      complete}
- *
- * <p>The <code>R.layout.fragment_pager_list</code> resource containing each
- * individual fragment's layout is:
- *
- * {@sample development/samples/Support4Demos/res/layout/fragment_pager_list.xml
- *      complete}
+ * 将v4包下的Fragment，FragmentManager和FragmentTransaction替换为android.app包下对应的类
+ * Created by whataa
  */
 public abstract class FragmentPagerAdapter extends PagerAdapter {
     private static final String TAG = "FragmentPagerAdapter";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private final FragmentManager mFragmentManager;
     private FragmentTransaction mCurTransaction = null;
@@ -86,6 +55,12 @@ public abstract class FragmentPagerAdapter extends PagerAdapter {
         }
     }
 
+    /**
+     *
+     * @param container 指代ViewPager
+     * @param position
+     * @return
+     */
     @Override
     public Object instantiateItem(ViewGroup container, int position) {
         if (mCurTransaction == null) {
@@ -143,8 +118,13 @@ public abstract class FragmentPagerAdapter extends PagerAdapter {
     @Override
     public void finishUpdate(ViewGroup container) {
         if (mCurTransaction != null) {
-            // API24: commitNowAllowingStateLoss
-            mCurTransaction.commitAllowingStateLoss();
+            // API24新增了commitNowAllowingStateLoss方法
+            if(Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+                mCurTransaction.commitNowAllowingStateLoss();
+            } else {
+                mCurTransaction.commitAllowingStateLoss();
+                mFragmentManager.executePendingTransactions();
+            }
             mCurTransaction = null;
         }
     }
