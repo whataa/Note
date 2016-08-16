@@ -5,7 +5,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 
 import whataa.github.com.note.article.MainArticleFragment;
-import whataa.github.com.note.widget.FragmentPagerAdapter;
+import whataa.github.com.note.widget.pager.FragmentPagerAdapter;
 
 public class MainPageAdapter extends FragmentPagerAdapter {
 

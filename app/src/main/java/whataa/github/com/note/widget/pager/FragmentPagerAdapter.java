@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package whataa.github.com.note.widget;
+package whataa.github.com.note.widget.pager;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.os.Build;
 import android.os.Parcelable;
-import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +30,7 @@ import android.view.ViewGroup;
  * Created by whataa
  */
 public abstract class FragmentPagerAdapter extends PagerAdapter {
-    private static final String TAG = "FragmentPagerAdapter";
+    private static final String TAG = FragmentPagerAdapter.class.getSimpleName();
     private static final boolean DEBUG = true;
 
     private final FragmentManager mFragmentManager;
