@@ -45,12 +45,17 @@ public class MainActivity extends Activity {
         viewPager.addOnPageChangeListener(new CycleViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageSelected(int position) {
-                Log.e("addOnPageChangeListener",""+position+" cur="+viewPager.getCurrentItem());
+                Log.e("onPageSelected",""+position+" cur="+viewPager.getCurrentItem());
             }
 
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 Log.e("onPageScrolled","position="+position+" "+positionOffset+" "+positionOffsetPixels);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+                Log.e("onStateChanged","state="+state);
             }
         });
         indicator.setUpWith(viewPager);

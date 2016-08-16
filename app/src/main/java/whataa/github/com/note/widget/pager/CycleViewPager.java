@@ -59,6 +59,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * 1. 关闭了手动选择Item时的动画；
+ */
 public class CycleViewPager extends ViewGroup {
     private static final String TAG = CycleViewPager.class.getSimpleName();
     private static final boolean DEBUG = false;
@@ -574,7 +577,7 @@ public class CycleViewPager extends ViewGroup {
      */
     public void setCurrentItem(int item) {
         mPopulatePending = false;
-        setCurrentItemInternal(item, !mFirstLayout, false);
+        setCurrentItemInternal(item, !mFirstLayout?false:false, false);
     }
 
     /**
@@ -588,7 +591,7 @@ public class CycleViewPager extends ViewGroup {
      */
     public void setCurrentItem(int item, boolean smoothScroll) {
         mPopulatePending = false;
-        setCurrentItemInternal(item, smoothScroll, false);
+        setCurrentItemInternal(item, false, false);
     }
 
     public int getCurrentItem() {
@@ -1972,17 +1975,19 @@ public class CycleViewPager extends ViewGroup {
         final int widthWithMargin = width + mPageMargin;
         final float marginOffset = (float) mPageMargin / width;
         int currentPage = ii.position;
-        //TODO
-        float pageOffset = (Math.abs((float) xpos / width) - Math.abs(ii.offset)) / (ii.widthFactor + marginOffset);
-        int offsetPixels = (int) (pageOffset * widthWithMargin);
-        Log.i("pageOffset",xpos+" "+width+" "+ii.offset+" "+ii.widthFactor+" "+marginOffset);
+        final float pageOffset = ((float) xpos / width - ii.offset) / (ii.widthFactor + marginOffset);
+        final int offsetPixels = (int) (pageOffset * widthWithMargin);
         mCalledSuper = false;
 
         //-----
         if (mAdapter.getCount() > 0) {
             // TODO setOffscreenPageLimit暂时出问题，所以mItems.size()始终==3
-            int middle = (mItems.size()+1)/2-1;
-            currentPage = mItems.get(middle).position;
+            int middle = (mItems.size() + 1) / 2 - 1;
+            if (xpos > 0) {
+                currentPage = mItems.get(middle).position;
+            } else {
+                currentPage = mItems.get(middle-1).position;
+            }
         }
         if (pageOffset == 0 && offsetPixels == 0) {
             currentPage = mCurItem;
