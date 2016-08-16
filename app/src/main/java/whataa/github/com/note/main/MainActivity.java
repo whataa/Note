@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toolbar;
@@ -14,6 +15,7 @@ import whataa.github.com.note.R;
 import whataa.github.com.note.article.MainArticleFragment;
 import whataa.github.com.note.goal.MainGoalFragment;
 import whataa.github.com.note.widget.pager.CycleViewPager;
+import whataa.github.com.note.widget.pager.SimpleIndicator;
 
 public class MainActivity extends Activity {
 
@@ -21,8 +23,8 @@ public class MainActivity extends Activity {
     public LinearLayout wrapper;
     @BindView(R.id.toolbar)
     public Toolbar toolbar;
-    @BindView(R.id.tablayout)
-    public TabLayout tabLayout;
+    @BindView(R.id.simple_indicator)
+    public SimpleIndicator indicator;
     @BindView(R.id.viewpager)
     public CycleViewPager viewPager;
     private MainPageAdapter adapter;
@@ -36,16 +38,22 @@ public class MainActivity extends Activity {
         ButterKnife.bind(this);
         setActionBar(toolbar);
 
-        MainArticleFragment articleFragment = new MainArticleFragment();
-        MainGoalFragment goalFragment = new MainGoalFragment();
-        Log.e(MainActivity.class.getName(),"new:"+articleFragment);
-        Log.e(MainActivity.class.getName(),"new:"+goalFragment);
-        articleFragment.setPassData("setPassData");
 
 
+        viewPager.setAdapter(adapter = new MainPageAdapter(getFragmentManager(), viewPager.getId()));
+//        viewPager.setOffscreenPageLimit(4);
+        viewPager.addOnPageChangeListener(new CycleViewPager.SimpleOnPageChangeListener(){
+            @Override
+            public void onPageSelected(int position) {
+                Log.e("addOnPageChangeListener",""+position+" cur="+viewPager.getCurrentItem());
+            }
 
-        viewPager.setAdapter(adapter = new MainPageAdapter(getFragmentManager(),new Fragment[]{articleFragment,goalFragment}));
-//        tabLayout.setupWithViewPager(viewPager);
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.e("onPageScrolled","position="+position+" "+positionOffset+" "+positionOffsetPixels);
+            }
+        });
+        indicator.setUpWith(viewPager);
     }
 
     @Override

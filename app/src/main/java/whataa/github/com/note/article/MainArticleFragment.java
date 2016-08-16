@@ -25,6 +25,11 @@ public class MainArticleFragment extends Fragment {
     public TextView textView;
     private Unbinder unbinder;
 
+    public static MainArticleFragment newInstance() {
+        MainArticleFragment fragment = new MainArticleFragment();
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

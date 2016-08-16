@@ -10,6 +10,12 @@ import android.view.ViewGroup;
 import whataa.github.com.note.R;
 
 public class MainGoalFragment extends Fragment {
+
+    public static MainGoalFragment newInstance() {
+        MainGoalFragment goalFragment = new MainGoalFragment();
+        return goalFragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

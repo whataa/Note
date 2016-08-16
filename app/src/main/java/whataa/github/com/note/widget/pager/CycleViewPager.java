@@ -462,12 +462,10 @@ public class CycleViewPager extends ViewGroup {
             for (int i = 0; i < mItems.size(); i++) {
                 final ItemInfo ii = mItems.get(i);
                 if (ii.position < 0 && ii.object == null) {
-                    // 左側のダミーページ
                     continue;
                 }
                 mAdapter.destroyItem(this, ii.position, ii.object);
             }
-            // 左側のダミーページを削除
             if (mAdapter.getCount() == 2) {
                 for (int i = 0; i < getChildCount(); i++) {
                     View child = getChildAt(i);
@@ -633,7 +631,6 @@ public class CycleViewPager extends ViewGroup {
         }
 
         final boolean dispatchSelected = mCurItem != item;
-        // CHANGE
         int orgItem = item;
         if (N == 2) {
             if (item < 0) {
@@ -643,10 +640,8 @@ public class CycleViewPager extends ViewGroup {
             }
         }
 
-        // CHANGE
         int oldPosition = mCurItem;
         populate(item);
-        // CHANGE
         final ItemInfo curInfo = infoForPosition(orgItem);
         int destX = 0;
         if (curInfo != null) {
@@ -654,7 +649,6 @@ public class CycleViewPager extends ViewGroup {
             destX = (int) (width * Math.max(mFirstOffset, Math.min(curInfo.offset, mLastOffset)));
         }
 
-        // CHANGE
         if (!mPopulatePending && oldPosition != item) {
             if (N == 2 && item == 1) {
                 oldPosition = -1;
@@ -669,21 +663,16 @@ public class CycleViewPager extends ViewGroup {
 
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity);
-            if (dispatchSelected && mOnPageChangeListener != null) {
-                mOnPageChangeListener.onPageSelected(item);
-            }
-            if (dispatchSelected && mInternalPageChangeListener != null) {
-                mInternalPageChangeListener.onPageSelected(item);
+            if (dispatchSelected) {
+                dispatchOnPageSelected(item);
             }
         } else {
-            if (dispatchSelected && mOnPageChangeListener != null) {
-                mOnPageChangeListener.onPageSelected(item);
-            }
-            if (dispatchSelected && mInternalPageChangeListener != null) {
-                mInternalPageChangeListener.onPageSelected(item);
+            if (dispatchSelected) {
+                dispatchOnPageSelected(item);
             }
             completeScroll(false);
             scrollTo(destX, 0);
+            pageScrolled(destX);
         }
     }
 
@@ -693,8 +682,7 @@ public class CycleViewPager extends ViewGroup {
         int destX = 0;
         if (curInfo != null) {
             final int width = getClientWidth();
-            destX = (int) (width * Math.max(mFirstOffset,
-                    Math.min(curInfo.offset, mLastOffset)));
+            destX = (int) (width * Math.max(mFirstOffset, Math.min(curInfo.offset, mLastOffset)));
         }
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity);
@@ -840,6 +828,7 @@ public class CycleViewPager extends ViewGroup {
     }
 
     /**
+     * 失效，待修复<br/>
      * Set the number of pages that should be retained to either side of the
      * current page in the view hierarchy in an idle state. Pages beyond this
      * limit will be recreated from the adapter when needed.
@@ -862,6 +851,7 @@ public class CycleViewPager extends ViewGroup {
      * @param limit
      *            How many pages will be kept offscreen in an idle state.
      */
+    @Deprecated
     public void setOffscreenPageLimit(int limit) {
         if (limit < DEFAULT_OFFSCREEN_PAGES) {
             Log.w(TAG, "Requested offscreen page limit " + limit + " too small; defaulting to "
@@ -1038,7 +1028,6 @@ public class CycleViewPager extends ViewGroup {
         ii.object = mAdapter.instantiateItem(this, position);
         ii.widthFactor = mAdapter.getPageWidth(position);
         if (index < 0 || index >= mItems.size()) {
-            // CHANGE
             if (index < 0) {
                 mItems.add(0, ii);
             } else {
@@ -1079,7 +1068,6 @@ public class CycleViewPager extends ViewGroup {
                 }
 
                 if (ii.position < 0 && ii.object == null) {
-                    // 左側のダミーページを
                 } else {
                     mAdapter.destroyItem(this, ii.position, ii.object);
                 }
@@ -1115,8 +1103,6 @@ public class CycleViewPager extends ViewGroup {
             final int childCount = getChildCount();
             for (int i = 0; i < childCount; i++) {
                 final View child = getChildAt(i);
-
-                // 左側のダミーページを削除
                 if (isDummy(child)) {
                     removeView(child);
                     continue;
@@ -1137,12 +1123,10 @@ public class CycleViewPager extends ViewGroup {
         populate(mCurItem);
     }
 
-    // CHANGE
     boolean mRequestLayoutNeed = false;;
 
     void populate(int newCurrentItem) {
 
-        // CHANGE
         int oldCurrentItem = mCurItem;
         int oldItemsSize = mItems.size();
 
@@ -1181,7 +1165,6 @@ public class CycleViewPager extends ViewGroup {
         final int N = mAdapter.getCount();
 
         final int pageLimit = mOffscreenPageLimit;
-        // CHANGE
         final int startPos = (mCurItem + N - pageLimit) % N;
         // final int startPos = Math.max(0, mCurItem - pageLimit);
         final int endPos = (mCurItem + pageLimit) % N;
@@ -1207,14 +1190,12 @@ public class CycleViewPager extends ViewGroup {
         ItemInfo curItem = null;
         for (curIndex = 0; curIndex < mItems.size(); curIndex++) {
             final ItemInfo ii = mItems.get(curIndex);
-            // CHANGE
             if (ii.position == mCurItem) {
                 curItem = ii;
                 break;
             }
         }
 
-        // CHANGE
         if (curIndex >= mItems.size() && mItems.size() > 0 && oldCurInfo != null) {
             int oldPosition = oldCurInfo.position;
             int f = oldPosition < mCurItem ? oldPosition + N : oldPosition;
@@ -1240,7 +1221,6 @@ public class CycleViewPager extends ViewGroup {
         if (curItem != null) {
 
             if (N > 1) {
-                // ANALYZE 左側のページ
                 float extraWidthLeft = 0.f;
                 int itemIndex = curIndex - 1;
                 ItemInfo ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
@@ -1251,18 +1231,15 @@ public class CycleViewPager extends ViewGroup {
                 for (int i = 0; i < N; i++) {
                     final int pos = ((mCurItem - 1 - i) + N) % N;
 
-                    // CHANGE
                     ItemInfo firstInfo = mItems.get(0);
                     if (pos == firstInfo.position && firstInfo.scrolling) {
                         break;
                     }
 
-                    // CHANGE
                     if (extraWidthLeft >= leftWidthNeeded && (pos < startPos || pos > endPos || itemIndex < 0)) {
                         if (ii == null) {
                             break;
                         }
-                        // ANALYZE 右にスクロールして、左側のページを削除
                         if (pos == ii.position && !ii.scrolling && N > 3) {
                             mItems.remove(itemIndex);
                             mAdapter.destroyItem(this, pos, ii.object);
@@ -1275,14 +1252,12 @@ public class CycleViewPager extends ViewGroup {
                         itemIndex--;
                         ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
                     } else {
-                        // CHANGE
                         ItemInfo lastInfo = mItems.get(mItems.size() - 1);
                         if (pos == lastInfo.position) {
                             ii = lastInfo;
                             mItems.remove(lastInfo);
                             mItems.add(itemIndex + 1, lastInfo);
                         } else {
-                            // 左側のページを追加
                             ii = addNewItem(pos, itemIndex + 1);
                         }
                         curIndex++;
@@ -1291,7 +1266,6 @@ public class CycleViewPager extends ViewGroup {
                     }
                 }
 
-                // ANALYZE 右側のページ
                 float extraWidthRight = curItem.widthFactor;
                 itemIndex = curIndex + 1;
                 if (extraWidthRight < 2.f) {
@@ -1300,14 +1274,11 @@ public class CycleViewPager extends ViewGroup {
                             (float) getPaddingRight() / (float) clientWidth + 2.f;
                     for (int i = 0; i < N; i++) {
                         final int pos = ((mCurItem + 1 + i) + N) % N;
-                        // CHANGE
                         if (extraWidthRight >= rightWidthNeeded && (pos > endPos || pos < startPos || itemIndex >= mItems.size())) {
                             if (ii == null) {
                                 break;
                             }
 
-                            // ANALYZE 左にスクロールして、右側のページを削除
-                            // CHANGE
                             if (pos == ii.position) {
                                 if (!ii.scrolling) {
                                     mItems.remove(itemIndex);
@@ -1323,7 +1294,6 @@ public class CycleViewPager extends ViewGroup {
                             itemIndex++;
                             ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
                         } else {
-                            // CHANGE
                             ItemInfo firstInfo = mItems.get(0);
                             if (firstInfo.position == -1 && mItems.size() > 1) {
                                 firstInfo = mItems.get(1);
@@ -1334,7 +1304,6 @@ public class CycleViewPager extends ViewGroup {
                                 mItems.add(itemIndex - 1, firstInfo);
                                 curIndex--;
                             } else {
-                                // 右側のページを追加
                                 ii = addNewItem(pos, itemIndex);
                                 itemIndex++;
                             }
@@ -1345,11 +1314,9 @@ public class CycleViewPager extends ViewGroup {
                 }
             }
 
-            // CHANGE
             if (N == 2) {
                 if (mItems.size() < 3) {
                     ItemInfo lastInfo = mItems.get(mItems.size() - 1);
-                    // 左側のダミーページを追加
                     ItemInfo ii = new ItemInfo();
                     ii.position = -1;
                     ii.object = null;
@@ -1365,7 +1332,6 @@ public class CycleViewPager extends ViewGroup {
             calculatePageOffsets(curItem, curIndex, oldCurInfo);
 
             if (N > 3) {
-                Log.d("ここ", "N = " + N + ", oldItemsSize = " + oldItemsSize + ", mItems.size = " + mItems.size() + ", mRequestLayoutNeed = " + mRequestLayoutNeed);
                 if (oldItemsSize > 3) {
                     if (mItems.size() > 3) {
                         if (mRequestLayoutNeed) {
@@ -1448,19 +1414,15 @@ public class CycleViewPager extends ViewGroup {
             final int oldCurPosition = oldCurInfo.position;
             // Base offsets off of oldCurInfo.
             if (oldCurPosition < curItem.position) {
-                // ANALYZE 右に移動した。以前のページ + 1から新しいページまでの各ページのオフセットを計算
                 int itemIndex = 0;
                 ItemInfo ii = null;
                 float offset = oldCurInfo.offset + oldCurInfo.widthFactor + marginOffset;
                 for (int pos = oldCurPosition + 1; pos <= curItem.position && itemIndex < mItems.size(); pos++) {
                     ii = mItems.get(itemIndex);
-                    // ANALYZE position が pos より大きくなる ItemInfo を mItems を下から探す
                     while (pos > ii.position && itemIndex < mItems.size() - 1) {
                         itemIndex++;
                         ii = mItems.get(itemIndex);
                     }
-                    // ANALYZE position が pos より大きい = position が pos と同じになる
-                    // ItemInfo がなかった
                     while (pos < ii.position) {
                         // We don't have an item populated for this,
                         // ask the adapter for an offset.
@@ -1471,7 +1433,6 @@ public class CycleViewPager extends ViewGroup {
                     offset += ii.widthFactor + marginOffset;
                 }
             } else if (oldCurPosition > curItem.position) {
-                // ANALYZE 左に移動した。以前のページ - 1 から新しいページまでの各ページのオフセットを計算
                 int itemIndex = mItems.size() - 1;
                 ItemInfo ii = null;
                 float offset = oldCurInfo.offset;
@@ -1508,7 +1469,6 @@ public class CycleViewPager extends ViewGroup {
         // Previous pages
         for (int i = curIndex - 1; i >= 0; i--, pos--) {
             final ItemInfo ii = mItems.get(i);
-            // CHANGE
             while (pos > ii.position && N != 2) {
                 offset -= mAdapter.getPageWidth(pos--) + marginOffset;
             }
@@ -1533,7 +1493,6 @@ public class CycleViewPager extends ViewGroup {
             offset += ii.widthFactor + marginOffset;
         }
 
-        // CHANGE
         if (N <= 3) {
             requestLayout();
         }
@@ -1685,13 +1644,11 @@ public class CycleViewPager extends ViewGroup {
     }
 
     ItemInfo infoForChild(View child) {
-        // CHANGE
         final int N = mAdapter.getCount();
         boolean isDummy = isDummy(child);
 
         for (int i = 0; i < mItems.size(); i++) {
             ItemInfo ii = mItems.get(i);
-            // CHANGE
             if (isDummy && ii.position == -1) {
                 return ii;
             }
@@ -1959,7 +1916,6 @@ public class CycleViewPager extends ViewGroup {
             }
         }
 
-        // CHANGE
         scrollTo(0, 0);
 
         mTopPageBounds = paddingTop;
@@ -2015,11 +1971,24 @@ public class CycleViewPager extends ViewGroup {
         final int width = getClientWidth();
         final int widthWithMargin = width + mPageMargin;
         final float marginOffset = (float) mPageMargin / width;
-        final int currentPage = ii.position;
-        final float pageOffset = (((float) xpos / width) - ii.offset) / (ii.widthFactor + marginOffset);
-        final int offsetPixels = (int) (pageOffset * widthWithMargin);
-
+        int currentPage = ii.position;
+        //TODO
+        float pageOffset = (Math.abs((float) xpos / width) - Math.abs(ii.offset)) / (ii.widthFactor + marginOffset);
+        int offsetPixels = (int) (pageOffset * widthWithMargin);
+        Log.i("pageOffset",xpos+" "+width+" "+ii.offset+" "+ii.widthFactor+" "+marginOffset);
         mCalledSuper = false;
+
+        //-----
+        if (mAdapter.getCount() > 0) {
+            // TODO setOffscreenPageLimit暂时出问题，所以mItems.size()始终==3
+            int middle = (mItems.size()+1)/2-1;
+            currentPage = mItems.get(middle).position;
+        }
+        if (pageOffset == 0 && offsetPixels == 0) {
+            currentPage = mCurItem;
+        }
+        //-----
+
         onPageScrolled(currentPage, pageOffset, offsetPixels);
         if (!mCalledSuper) {
             throw new IllegalStateException("onPageScrolled did not call superclass implementation");
@@ -2278,7 +2247,6 @@ public class CycleViewPager extends ViewGroup {
                     requestParentDisallowInterceptTouchEvent(true);
                     setScrollState(SCROLL_STATE_DRAGGING);
 
-                    // CHANGE
                     if (mAdapter.getCount() == 2) {
                         setupDummyView();
                     }
@@ -2416,7 +2384,6 @@ public class CycleViewPager extends ViewGroup {
                 mPopulatePending = false;
                 populate();
 
-                // CHANGE
                 if (mAdapter.getCount() == 2) {
                     setupDummyView();
                 }
@@ -2590,7 +2557,6 @@ public class CycleViewPager extends ViewGroup {
         for (int i = 0; i < mItems.size(); i++) {
             ItemInfo ii = mItems.get(i);
             float offset;
-            // CHANGE
             if (!first && ii.position != lastPos + 1 && mAdapter.getCount() != 2) {
                 // Create a synthetic item for a missing page.
                 ii = mTempItem;
@@ -2620,8 +2586,18 @@ public class CycleViewPager extends ViewGroup {
         return lastItem;
     }
 
+    /**
+     *
+     * @param currentPage
+     * @param pageOffset 当前页在当前屏剩余的比例
+     * @param velocity 向右滑动>=0
+     * @param deltaX
+     * @return
+     */
     private int determineTargetPage(int currentPage, float pageOffset, int velocity, int deltaX) {
+        Log.i("determineTargetPage",currentPage+" "+pageOffset+" "+velocity+" "+deltaX);
         int targetPage;
+        // 满足阈值距离和速度
         if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity) {
             targetPage = velocity > 0 ? currentPage : currentPage + 1;
         } else {
@@ -2632,13 +2608,10 @@ public class CycleViewPager extends ViewGroup {
             }
         }
 
-        Log.d("ここ", "currentPage = " + currentPage + ", taretPage = " + targetPage);
-
         final int N = mAdapter.getCount();
 
-        // CHANGE
+         
         if (N == 2) {
-            // ページ数2
             if (mCurItem == 1) {
                 // -1 1 0
                 if (currentPage == -1 && targetPage == 0) {
@@ -2653,9 +2626,8 @@ public class CycleViewPager extends ViewGroup {
             final ItemInfo firstItem = mItems.get(0);
             final ItemInfo lastItem = mItems.get(mItems.size() - 1);
 
-            // CHANGE
+            
             if (firstItem.position > lastItem.position) {
-                // 端にいる
                 if (targetPage >= N) {
                     targetPage = targetPage % N;
                 }
@@ -2751,40 +2723,25 @@ public class CycleViewPager extends ViewGroup {
         }
     }
 
-    // CHANGE
     Bitmap getViewBitmap(View v) {
         v.clearFocus();
         v.setPressed(false);
 
-        // もともとの設定値を保持しておく
         boolean willNotCache = v.willNotCacheDrawing();
         int color = v.getDrawingCacheBackgroundColor();
 
-        // 描画をキャッシュしないようにセット
         v.setWillNotCacheDrawing(false);
-
-        // 描画キャッシュをクリアして、背景を透明にセット
         v.setDrawingCacheBackgroundColor(0);
-
-        // 以前の描画キャッシュを破棄
         if (color != 0) {
             v.destroyDrawingCache();
         }
-
-        // 新しく描画キャッシュを作成
         v.buildDrawingCache();
-
-        // キャッシュ用の Bitmap を取得
         Bitmap cacheBitmap = v.getDrawingCache();
         if (cacheBitmap == null) {
             Log.e(TAG, "failed getViewBitmap(" + v + ")", new RuntimeException());
             return null;
         }
-
-        // キャッシュ用の Bitmap からドラッグ中の画像に使うための Bitmap を作成
         Bitmap bitmap = Bitmap.createBitmap(cacheBitmap);
-
-        // もともとセットされていた描画キャッシュに戻す
         v.destroyDrawingCache();
         v.setWillNotCacheDrawing(willNotCache);
         v.setDrawingCacheBackgroundColor(color);
@@ -3275,7 +3232,6 @@ public class CycleViewPager extends ViewGroup {
         if (event.getEventType() == AccessibilityEventCompat.TYPE_VIEW_SCROLLED) {
             return super.dispatchPopulateAccessibilityEvent(event);
         }
-        // TODO: Should this note something about the paging container?
 
         final int childCount = getChildCount();
         for (int i = 0; i < childCount; i++) {
