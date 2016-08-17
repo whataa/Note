@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package whataa.github.com.note.widget.pager;
+package io.github.whataa.note.pager;
 
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;

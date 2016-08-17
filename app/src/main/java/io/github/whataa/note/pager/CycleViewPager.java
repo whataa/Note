@@ -1,4 +1,4 @@
-package whataa.github.com.note.widget.pager;
+package io.github.whataa.note.pager;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -60,7 +60,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * 1. 关闭了手动选择Item时的动画；
+ * 1. populate(int newCurrentItem)方法,导致setOffscreenPageLimit无效
+ * 2. 关闭了手动选择Item时的动画；
  */
 public class CycleViewPager extends ViewGroup {
     private static final String TAG = CycleViewPager.class.getSimpleName();

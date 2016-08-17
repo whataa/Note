@@ -1,10 +1,8 @@
-package whataa.github.com.note.main;
+package io.github.whataa.note.main;
 
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toolbar;
@@ -12,10 +10,8 @@ import android.widget.Toolbar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import whataa.github.com.note.R;
-import whataa.github.com.note.article.MainArticleFragment;
-import whataa.github.com.note.goal.MainGoalFragment;
-import whataa.github.com.note.widget.pager.CycleViewPager;
-import whataa.github.com.note.widget.pager.SimpleIndicator;
+import io.github.whataa.note.pager.CycleViewPager;
+import io.github.whataa.note.pager.SimpleIndicator;
 
 public class MainActivity extends Activity {
 
@@ -41,7 +37,6 @@ public class MainActivity extends Activity {
 
 
         viewPager.setAdapter(adapter = new MainPageAdapter(getFragmentManager(), viewPager.getId()));
-//        viewPager.setOffscreenPageLimit(4);
         viewPager.addOnPageChangeListener(new CycleViewPager.SimpleOnPageChangeListener(){
             @Override
             public void onPageSelected(int position) {

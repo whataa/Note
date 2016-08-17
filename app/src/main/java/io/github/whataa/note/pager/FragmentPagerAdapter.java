@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package whataa.github.com.note.widget.pager;
+package io.github.whataa.note.pager;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -27,7 +27,6 @@ import android.view.ViewGroup;
 
 /**
  * 将v4包下的Fragment，FragmentManager和FragmentTransaction替换为android.app包下对应的类
- * Created by whataa
  */
 public abstract class FragmentPagerAdapter extends PagerAdapter {
     private static final String TAG = FragmentPagerAdapter.class.getSimpleName();

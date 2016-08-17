@@ -1,4 +1,4 @@
-package whataa.github.com.note.article;
+package io.github.whataa.note.article;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -16,11 +16,7 @@ import butterknife.Unbinder;
 import whataa.github.com.note.R;
 
 public class MainArticleFragment extends Fragment {
-    public void setPassData(String passData) {
-        this.passData = passData;
-    }
 
-    private String passData;
     @BindView(R.id.fragment_article_text)
     public TextView textView;
     private Unbinder unbinder;
@@ -43,7 +39,6 @@ public class MainArticleFragment extends Fragment {
         }
         View v = inflater.inflate(R.layout.fragment_article,container,false);
         unbinder = ButterKnife.bind(this, v);
-        textView.setText(""+passData);
         return v;
     }
     @Override public void onDestroyView() {

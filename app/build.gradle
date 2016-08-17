@@ -7,7 +7,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "whataa.github.com.note"
+        applicationId "io.github.whataa.note"
         minSdkVersion 21
         targetSdkVersion 24
         versionCode 1

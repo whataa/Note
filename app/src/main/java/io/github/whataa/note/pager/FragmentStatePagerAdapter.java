@@ -1,4 +1,4 @@
-package whataa.github.com.note.widget.pager;
+package io.github.whataa.note.pager;
 
 import android.app.Fragment;
 import android.app.FragmentManager;

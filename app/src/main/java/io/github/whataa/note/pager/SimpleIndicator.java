@@ -1,9 +1,11 @@
-package whataa.github.com.note.widget.pager;
+package io.github.whataa.note.pager;
 
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.TypedValue;
@@ -163,6 +165,7 @@ public class SimpleIndicator extends LinearLayout implements CycleViewPager.OnPa
     }
 
     public void setUpWith(CycleViewPager view) {
+        Log.d("setUpWith","setUpWith");
         if (mViewPager == view) {
             return;
         }
@@ -178,6 +181,7 @@ public class SimpleIndicator extends LinearLayout implements CycleViewPager.OnPa
     }
 
     public void initTabs() {
+        Log.d("initTabs","initTabs");
         removeAllViews();
         mTitles.clear();
         final PagerAdapter adapter = mViewPager.getAdapter();
@@ -194,6 +198,7 @@ public class SimpleIndicator extends LinearLayout implements CycleViewPager.OnPa
     }
 
     private void addTab(int index, CharSequence text) {
+        Log.d("addTab",index+" "+text);
         final TextView tabView = new TextView(getContext());
         LayoutParams params = new LinearLayout.LayoutParams(0, MATCH_PARENT, 1);
         tabView.setTag(index);
@@ -223,4 +228,53 @@ public class SimpleIndicator extends LinearLayout implements CycleViewPager.OnPa
         mTitles.get(mCurrentPage).setTextColor(indicatorTextChosenColor);
     }
 
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Log.i(SimpleIndicator.class.getSimpleName(),"onSaveInstanceState:"+mCurrentPage);
+        Parcelable superState = super.onSaveInstanceState();
+        SaveSate saveSate = new SaveSate(superState);
+        saveSate.currentPage = mCurrentPage;
+        return saveSate;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof SaveSate)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+        SaveSate ss = (SaveSate) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+        mCurrentPage = ss.currentPage;
+        setCurrentTab(mCurrentPage);
+        Log.i(SimpleIndicator.class.getSimpleName(),"onRestoreInstanceState:"+mCurrentPage);
+    }
+
+    public static class SaveSate extends BaseSavedState {
+        int currentPage;
+
+        public SaveSate(Parcelable superState) {
+            super(superState);
+        }
+        private SaveSate(Parcel in) {
+            super(in);
+            this.currentPage = in.readInt();
+        }
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeInt(this.currentPage);
+        }
+        public static final Parcelable.Creator<SaveSate> CREATOR = new Creator<SaveSate>() {
+            @Override
+            public SaveSate createFromParcel(Parcel parcel) {
+                return new SaveSate(parcel);
+            }
+
+            @Override
+            public SaveSate[] newArray(int i) {
+                return new SaveSate[0];
+            }
+        };
+    }
 }

@@ -1,4 +1,4 @@
-package whataa.github.com.note.goal;
+package io.github.whataa.note.goal;
 
 import android.app.Fragment;
 import android.os.Bundle;
