@@ -10,8 +10,8 @@ import android.widget.Toolbar;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import whataa.github.com.note.R;
-import io.github.whataa.note.pager.CycleViewPager;
-import io.github.whataa.note.pager.SimpleIndicator;
+import io.github.whataa.note.widget.pager.CycleViewPager;
+import io.github.whataa.note.widget.pager.SimpleIndicator;
 
 public class MainActivity extends Activity {
 
@@ -33,6 +33,7 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setActionBar(toolbar);
+        toolbar.setNavigationIcon(R.mipmap.ic_launcher);
 
 
 

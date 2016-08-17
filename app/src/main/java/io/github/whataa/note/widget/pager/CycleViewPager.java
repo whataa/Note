@@ -1,4 +1,4 @@
-package io.github.whataa.note.pager;
+package io.github.whataa.note.widget.pager;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -1981,13 +1981,19 @@ public class CycleViewPager extends ViewGroup {
         mCalledSuper = false;
 
         //-----
+
+        int N = mAdapter.getCount();
         if (mAdapter.getCount() > 0) {
             // TODO setOffscreenPageLimit暂时出问题，所以mItems.size()始终==3
             int middle = (mItems.size() + 1) / 2 - 1;
             if (xpos > 0) {
                 currentPage = mItems.get(middle).position;
             } else {
-                currentPage = mItems.get(middle-1).position;
+                if (N == 2) {// -1 1 0 | -1 0 1
+                    if (mItems.get(middle).position == 1) currentPage = 0;
+                    else currentPage = 1;
+                } else
+                    currentPage = mItems.get(middle-1).position;
             }
         }
         if (pageOffset == 0 && offsetPixels == 0) {

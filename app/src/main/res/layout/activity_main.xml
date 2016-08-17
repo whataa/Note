@@ -12,13 +12,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <io.github.whataa.note.pager.SimpleIndicator
-            android:id="@+id/simple_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <io.github.whataa.note.widget.pager.SimpleIndicator
+                android:layout_gravity="center"
+                android:id="@+id/simple_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
     </Toolbar>
 
-    <io.github.whataa.note.pager.CycleViewPager
+    <io.github.whataa.note.widget.pager.CycleViewPager
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

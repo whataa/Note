@@ -1,4 +1,4 @@
-package io.github.whataa.note.pager;
+package io.github.whataa.note.widget.pager;
 
 import android.content.Context;
 import android.graphics.Canvas;

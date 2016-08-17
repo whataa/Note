@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.github.whataa.note.pager;
+package io.github.whataa.note.widget.pager;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
