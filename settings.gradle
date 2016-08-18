@@ -1,1 +1,1 @@
-include ':app', ':finepicer'
+include ':app', ':picer', ':dater', ':compat-app'

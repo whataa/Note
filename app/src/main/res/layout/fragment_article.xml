@@ -4,8 +4,9 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:id="@+id/fragment_article_text"
+    <Button
+        android:id="@+id/article_btn1"
+        android:text="start picer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

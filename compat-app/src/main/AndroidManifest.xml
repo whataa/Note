@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="whataa.github.com.note">
+    package="whataa.github.com.compat_app">
 
     <application
         android:allowBackup="true"
@@ -8,14 +8,16 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="io.github.whataa.note.main.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:theme="@style/PicerTheme" android:name="io.github.whataa.picer.PicerActivity" />
+        <activity
+            android:name="io.github.whataa.picer.PicerActivity"
+            android:theme="@style/PicerTheme" />
     </application>
 
 </manifest>

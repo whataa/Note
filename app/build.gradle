@@ -12,6 +12,7 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+        vectorDrawables.useSupportLibrary = true // Vector兼容，否则在L前仍然会被转化为png
     }
     buildTypes {
         release {
@@ -23,6 +24,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile project(':picer')
     compile 'com.android.support:appcompat-v7:24.1.0'
 
     compile 'io.reactivex:rxjava:1.1.7'
