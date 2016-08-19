@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp">
+        android:layout_height="240dp"
+        android:background="@drawable/bg_preview">
 
         <ImageView
             android:id="@+id/picer_preview"
@@ -20,19 +22,19 @@
             android:layout_height="match_parent"
             android:gravity="center" />
 
-        <ImageButton
+        <ImageView
             android:id="@+id/picer_scale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:layout_marginBottom="16dp"
-            android:layout_marginRight="16dp" />
+            android:padding="16dp"
+            app:srcCompat="@drawable/ic_fullscreen_black_28dp" />
 
 
     </RelativeLayout>
 
-    <GridView
+    <io.github.whataa.picer.widget.ObservableGridView
         android:id="@+id/picer_gridview"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -43,28 +45,44 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp">
+        android:layout_height="50dp"
+        android:background="@drawable/bg_bottombar">
 
         <TextView
             android:id="@+id/picer_chosen_num"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
-            android:gravity="center" />
+            android:gravity="center"
+            android:paddingLeft="18dp"
+            android:paddingRight="16dp"
+            android:text="( 0 / 6)"
+            android:textColor="@color/colorFont"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/picer_folder"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
-            android:drawablePadding="4dp"
-            android:gravity="center" />
+            android:drawablePadding="3dp"
+            android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
+            android:gravity="center"
+            android:paddingLeft="2dp"
+            android:text="图库"
+            android:textColor="@color/colorFont"
+            android:textSize="18sp" />
 
-        <Button
-            android:background="@null"
+        <TextView
             android:id="@+id/picer_next"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:paddingLeft="16dp"
+            android:paddingRight="18dp"
+            android:text="确定"
+            android:textColor="@color/colorFont"
+            android:textSize="16sp" />
     </RelativeLayout>
 </LinearLayout>
