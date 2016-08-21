@@ -56,7 +56,6 @@
             android:gravity="center"
             android:paddingLeft="18dp"
             android:paddingRight="16dp"
-            android:text="( 0 / 6)"
             android:textColor="@color/colorFont"
             android:textSize="16sp" />
 
@@ -69,7 +68,6 @@
             android:drawableRight="@drawable/ic_arrow_drop_down_black_24dp"
             android:gravity="center"
             android:paddingLeft="2dp"
-            android:text="图库"
             android:textColor="@color/colorFont"
             android:textSize="18sp" />
 

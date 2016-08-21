@@ -9,7 +9,7 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
-
+        vectorDrawables.useSupportLibrary = true // Vector兼容，否则在L前仍然会被转化为png
     }
     buildTypes {
         release {

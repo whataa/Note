@@ -2,10 +2,13 @@ package io.github.whataa.picer.executor;
 
 import android.content.Context;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import java.io.File;
 
 public class PicLoader {
     private static PicLoader loader;
@@ -16,14 +19,17 @@ public class PicLoader {
 
     private Picasso picasso;
 
-    public static PicLoader instance(Context context) {
+    public static void initial(Context context) {
         if (loader == null) {
             synchronized (PicLoader.class) {
                 if (loader == null) {
-                    new PicLoader(context.getApplicationContext());
+                    loader = new PicLoader(context.getApplicationContext());
                 }
             }
         }
+    }
+    public static PicLoader instance() {
+        check();
         return loader;
     }
 
@@ -32,9 +38,13 @@ public class PicLoader {
     }
 
     public void load(String filePath, ImageView target, Callback callback) {
-        picasso.load(Uri.parse(filePath)).into(target, callback);
+        Log.d(PicLoader.class.getSimpleName(), filePath);
+        picasso.load(Uri.fromFile(new File(filePath))).centerCrop().resize(300,300).into(target, callback);
     }
 
+    public static void check() {
+        if (!isInitial()) throw new IllegalStateException("should call PicLoader#initial first");
+    }
 
     public static boolean isInitial() {
         return loader != null;

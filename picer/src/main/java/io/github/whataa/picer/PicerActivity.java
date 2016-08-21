@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 
 import io.github.whataa.finepic.R;
 import io.github.whataa.picer.executor.PicLoader;
+import io.github.whataa.picer.picer.PicerFragment;
 
 public class PicerActivity extends AppCompatActivity {
 
@@ -29,6 +30,7 @@ public class PicerActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PicLoader.initial(this);
         setContentView(R.layout.activity_picer);
         if (savedInstanceState != null) {
         }
@@ -58,7 +60,7 @@ public class PicerActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (PicLoader.isInitial()) PicLoader.instance(this).shutDown();
+        if (PicLoader.isInitial()) PicLoader.instance().shutDown();
         super.onBackPressed();
     }
 }

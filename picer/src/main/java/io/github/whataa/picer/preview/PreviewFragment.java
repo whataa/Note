@@ -1,4 +1,4 @@
-package io.github.whataa.picer;
+package io.github.whataa.picer.preview;
 
 import android.app.Fragment;
 
