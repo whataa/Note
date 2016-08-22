@@ -6,11 +6,13 @@ import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -20,13 +22,15 @@ import android.widget.Toast;
 import java.util.List;
 
 import io.github.whataa.finepic.R;
-import io.github.whataa.picer.Utils;
+import io.github.whataa.picer.executor.PicLoader;
 import io.github.whataa.picer.widget.ObservableGridView;
+import io.github.whataa.picer.widget.ObservableScrollViewCallbacks;
+import io.github.whataa.picer.widget.ScrollState;
 
 public class PicerFragment extends Fragment
         implements PicerContract.View,
         AdapterView.OnItemClickListener,
-        View.OnClickListener {
+        View.OnClickListener, ObservableScrollViewCallbacks {
     private static final String PARAM_SIZE = "param_size";
     private static final String TAG_LISTVIEW = "tag_listview";
 
@@ -48,6 +52,7 @@ public class PicerFragment extends Fragment
     private int maxSize;
     private PicerPresenter mPresenter;
 
+    private ImageView ivPreview;
     private TextView tvChosenNum, tvCurrentFolder;
     private PopupWindow popupWindow;
     private PictureAdapter mPicAdapter;
@@ -65,13 +70,15 @@ public class PicerFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_picer, container, false);
+        ivPreview = (ImageView) v.findViewById(R.id.picer_preview);
         tvChosenNum = (TextView) v.findViewById(R.id.picer_chosen_num);
         tvChosenNum.setOnClickListener(this);
         tvCurrentFolder = (TextView) v.findViewById(R.id.picer_folder);
         tvCurrentFolder.setOnClickListener(this);
         ObservableGridView gridView = (ObservableGridView) v.findViewById(R.id.picer_gridview);
-        gridView.setAdapter(mPicAdapter != null ? mPicAdapter : (mPicAdapter = new PictureAdapter(maxSize)));
+        gridView.setAdapter(mPicAdapter = new PictureAdapter(maxSize));
         gridView.setOnItemClickListener(this);
+        gridView.setScrollViewCallbacks(this);
 
         View popLayout = inflater.inflate(R.layout.layout_popupwindow, null);
         popLayout.setOnClickListener(this);
@@ -138,7 +145,9 @@ public class PicerFragment extends Fragment
             mPresenter.setCurrentFolder(mFolderAdapter.getCurrentFolderPath(i));
             popupWindow.dismiss();
         } else {
-            mPresenter.addOrRemoveChosen(mPicAdapter.getItemPath(i));
+            String path = mPicAdapter.getItemPath(i);
+            mPresenter.addOrRemoveChosen(path);
+            PicLoader.instance().loadPreview(path,ivPreview);
         }
     }
 
@@ -156,5 +165,20 @@ public class PicerFragment extends Fragment
             popupWindow.dismiss();
         }
 
+    }
+
+    @Override
+    public void onScrollChanged(int scrollY, boolean firstScroll, boolean dragging) {
+        Log.d(PicerFragment.class.getSimpleName(), "onScrollChanged: "+scrollY+" "+firstScroll+" "+dragging);
+    }
+
+    @Override
+    public void onDownMotionEvent() {
+        Log.d(PicerFragment.class.getSimpleName(), "onDownMotionEvent");
+    }
+
+    @Override
+    public void onUpOrCancelMotionEvent(ScrollState scrollState) {
+        Log.d(PicerFragment.class.getSimpleName(), "onUpOrCancelMotionEvent: "+scrollState);
     }
 }

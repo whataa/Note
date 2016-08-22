@@ -5,6 +5,8 @@
     android:layout_height="match_parent">
 
     <ImageView
+        android:adjustViewBounds="true"
+        android:scaleType="centerCrop"
         android:id="@+id/item_girdview_pic"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
@@ -14,6 +16,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right|top"
-        android:padding="8dp"
+        android:padding="6dp"
         app:srcCompat="@drawable/ic_check_box_outline_blank_black_26dp" />
 </io.github.whataa.picer.widget.SquareFrameLayout>

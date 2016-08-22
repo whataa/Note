@@ -5,43 +5,50 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:background="@drawable/bg_preview">
-
-        <ImageView
-            android:id="@+id/picer_preview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop" />
-
-        <TextView
-            android:id="@+id/picer_description"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center" />
-
-        <ImageView
-            android:id="@+id/picer_scale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:padding="16dp"
-            app:srcCompat="@drawable/ic_fullscreen_black_28dp" />
-
-
-    </RelativeLayout>
-
-    <io.github.whataa.picer.widget.ObservableGridView
-        android:id="@+id/picer_gridview"
+    <io.github.whataa.picer.widget.DragLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:horizontalSpacing="4dp"
-        android:numColumns="4"
-        android:verticalSpacing="4dp" />
+        android:layout_weight="1" >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:background="@android:color/white"
+            android:paddingBottom="2dp">
+
+            <ImageView
+                android:id="@+id/picer_preview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorLine"
+                android:scaleType="centerCrop" />
+
+            <TextView
+                android:id="@+id/picer_description"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center" />
+
+            <ImageView
+                android:id="@+id/picer_scale"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:padding="16dp"
+                app:srcCompat="@drawable/ic_fullscreen_black_28dp" />
+
+
+        </RelativeLayout>
+
+        <io.github.whataa.picer.widget.ObservableGridView
+            android:id="@+id/picer_gridview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:horizontalSpacing="1dp"
+            android:numColumns="4"
+            android:verticalSpacing="1dp" />
+    </io.github.whataa.picer.widget.DragLayout>
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -1,11 +1,12 @@
 package io.github.whataa.picer.executor;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -33,13 +34,24 @@ public class PicLoader {
         return loader;
     }
 
+    public void loadPreview(String filePath, ImageView target) {
+        picasso.load(Uri.fromFile(new File(filePath)))
+                .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
+                .centerCrop()
+                .fit()
+                .into(target);
+    }
+
     public void load(String filePath, ImageView target) {
         load(filePath, target, null);
     }
 
     public void load(String filePath, ImageView target, Callback callback) {
-        Log.d(PicLoader.class.getSimpleName(), filePath);
-        picasso.load(Uri.fromFile(new File(filePath))).centerCrop().resize(300,300).into(target, callback);
+        picasso.load(Uri.fromFile(new File(filePath)))
+                .resize(200,200)
+                .centerCrop()
+                .config(Bitmap.Config.RGB_565)
+                .into(target, callback);
     }
 
     public static void check() {
