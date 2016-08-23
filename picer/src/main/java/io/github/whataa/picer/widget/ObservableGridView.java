@@ -129,8 +129,13 @@ public class ObservableGridView extends GridView {
         return super.onInterceptTouchEvent(ev);
     }
 
+    float currentY;
+    public float getCurrentY() {
+        return currentY;
+    }
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        currentY = ev.getY();
         if (mCallbacks != null) {
             switch (ev.getActionMasked()) {
                 case MotionEvent.ACTION_UP:
@@ -358,5 +363,55 @@ public class ObservableGridView extends GridView {
                 return new SavedState[size];
             }
         };
+    }
+
+    /**
+     * Callbacks for Scrollable widgets.
+     */
+    public interface ObservableScrollViewCallbacks {
+        /**
+         * Called when the scroll change events occurred.
+         * This won't be called just after the view is laid out, so if you'd like to
+         * initialize the position of your views with this method, you should call this manually
+         * or invoke scroll as appropriate.
+         *
+         * @param scrollY     scroll position in Y axis
+         * @param firstScroll true when this is called for the first time in the consecutive motion events
+         * @param dragging    true when the view is dragged and false when the view is scrolled in the inertia
+         */
+        public void onScrollChanged(int scrollY, boolean firstScroll, boolean dragging);
+
+        /**
+         * Called when the down motion event occurred.
+         */
+        public void onDownMotionEvent();
+
+        /**
+         * Called when the dragging ended or canceled.
+         *
+         * @param scrollState state to indicate the scroll direction
+         */
+        public void onUpOrCancelMotionEvent(ScrollState scrollState);
+    }
+
+    /**
+     * Constants that indicates the scroll state of the Scrollable widgets.
+     */
+    public enum ScrollState {
+        /**
+         * Widget is stopped.
+         * This state does not always mean that this widget have never been scrolled.
+         */
+        STOP,
+
+        /**
+         * Widget is scrolled up by swiping it down.
+         */
+        UP,
+
+        /**
+         * Widget is scrolled down by swiping it up.
+         */
+        DOWN,
     }
 }

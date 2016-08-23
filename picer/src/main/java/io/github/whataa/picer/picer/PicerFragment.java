@@ -6,7 +6,6 @@ import android.app.FragmentManager;
 import android.app.LoaderManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,14 +22,13 @@ import java.util.List;
 
 import io.github.whataa.finepic.R;
 import io.github.whataa.picer.executor.PicLoader;
+import io.github.whataa.picer.widget.DragPinnerLayout;
 import io.github.whataa.picer.widget.ObservableGridView;
-import io.github.whataa.picer.widget.ObservableScrollViewCallbacks;
-import io.github.whataa.picer.widget.ScrollState;
 
 public class PicerFragment extends Fragment
         implements PicerContract.View,
         AdapterView.OnItemClickListener,
-        View.OnClickListener, ObservableScrollViewCallbacks {
+        View.OnClickListener, ObservableGridView.ObservableScrollViewCallbacks {
     private static final String PARAM_SIZE = "param_size";
     private static final String TAG_LISTVIEW = "tag_listview";
 
@@ -52,6 +50,8 @@ public class PicerFragment extends Fragment
     private int maxSize;
     private PicerPresenter mPresenter;
 
+    private DragPinnerLayout dragPinnerLayout;
+    private ObservableGridView gridView;
     private ImageView ivPreview;
     private TextView tvChosenNum, tvCurrentFolder;
     private PopupWindow popupWindow;
@@ -70,12 +70,13 @@ public class PicerFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_picer, container, false);
+        dragPinnerLayout = (DragPinnerLayout) v.findViewById(R.id.picer_draglayout);
         ivPreview = (ImageView) v.findViewById(R.id.picer_preview);
         tvChosenNum = (TextView) v.findViewById(R.id.picer_chosen_num);
         tvChosenNum.setOnClickListener(this);
         tvCurrentFolder = (TextView) v.findViewById(R.id.picer_folder);
         tvCurrentFolder.setOnClickListener(this);
-        ObservableGridView gridView = (ObservableGridView) v.findViewById(R.id.picer_gridview);
+        gridView = (ObservableGridView) v.findViewById(R.id.picer_gridview);
         gridView.setAdapter(mPicAdapter = new PictureAdapter(maxSize));
         gridView.setOnItemClickListener(this);
         gridView.setScrollViewCallbacks(this);
@@ -147,7 +148,8 @@ public class PicerFragment extends Fragment
         } else {
             String path = mPicAdapter.getItemPath(i);
             mPresenter.addOrRemoveChosen(path);
-            PicLoader.instance().loadPreview(path,ivPreview);
+            PicLoader.instance().loadPreview(path, ivPreview);
+            dragPinnerLayout.show();
         }
     }
 
@@ -155,6 +157,7 @@ public class PicerFragment extends Fragment
     public void onClick(View view) {
         int i = view.getId();
         if (i == R.id.picer_chosen_num) {
+
         } else if (i == R.id.picer_folder) {
             int[] location = new int[2];
             tvCurrentFolder.getLocationOnScreen(location);
@@ -167,18 +170,37 @@ public class PicerFragment extends Fragment
 
     }
 
+
+    //---------------------------the below part handles gesture between gridview & Pinner-----------
+    private boolean downToDrag = false;
+    private boolean canSlide = false;
+    // 28f~32f is suitable.
+    private static float SEN_SLIDE = 30f;
+
     @Override
     public void onScrollChanged(int scrollY, boolean firstScroll, boolean dragging) {
-        Log.d(PicerFragment.class.getSimpleName(), "onScrollChanged: "+scrollY+" "+firstScroll+" "+dragging);
+        if (downToDrag) {
+            float diff = Math.abs(gridView.getCurrentY() - dragPinnerLayout.getPinnerBottomY());
+            if (diff <= SEN_SLIDE) {
+                downToDrag = false;
+                canSlide = true;
+            }
+        }
+        if (canSlide) {
+            float shouldToY = gridView.getCurrentY();
+            dragPinnerLayout.slideTo(shouldToY);
+        }
     }
 
     @Override
     public void onDownMotionEvent() {
-        Log.d(PicerFragment.class.getSimpleName(), "onDownMotionEvent");
+        downToDrag = true;
     }
 
     @Override
-    public void onUpOrCancelMotionEvent(ScrollState scrollState) {
-        Log.d(PicerFragment.class.getSimpleName(), "onUpOrCancelMotionEvent: "+scrollState);
+    public void onUpOrCancelMotionEvent(ObservableGridView.ScrollState scrollState) {
+        downToDrag = false;
+        canSlide = false;
+        dragPinnerLayout.determineToState();
     }
 }
