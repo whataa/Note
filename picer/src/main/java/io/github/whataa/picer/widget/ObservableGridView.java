@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.SparseIntArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -278,8 +279,19 @@ public class ObservableGridView extends GridView {
                     }
                     mScrollY = mPrevScrolledChildrenHeight - firstVisibleChild.getTop();
                     mPrevFirstVisiblePosition = firstVisiblePosition;
-
-                    mCallbacks.onScrollChanged(mScrollY, mFirstScroll, mDragging);
+                    EdgeState edgeState;
+                    if (getAdapter() == null) {
+                        edgeState = EdgeState.NORMAL;
+                    } else {
+                        if (getFirstVisiblePosition() == 0) {
+                            edgeState = EdgeState.TOP;
+                        } else if (getLastVisiblePosition() == getAdapter().getCount() - 1) {
+                            edgeState = EdgeState.BOTTOM;
+                        } else {
+                            edgeState = EdgeState.NORMAL;
+                        }
+                    }
+                    mCallbacks.onScrollChanged(getCurrentY(), mScrollY, edgeState, mDragging);
                     if (mFirstScroll) {
                         mFirstScroll = false;
                     }
@@ -295,6 +307,10 @@ public class ObservableGridView extends GridView {
                 }
             }
         }
+    }
+
+    public boolean isFirstColumn(int position) {
+        return position < getNumColumns();
     }
 
     static class SavedState extends BaseSavedState {
@@ -376,10 +392,9 @@ public class ObservableGridView extends GridView {
          * or invoke scroll as appropriate.
          *
          * @param scrollY     scroll position in Y axis
-         * @param firstScroll true when this is called for the first time in the consecutive motion events
          * @param dragging    true when the view is dragged and false when the view is scrolled in the inertia
          */
-        public void onScrollChanged(int scrollY, boolean firstScroll, boolean dragging);
+        public void onScrollChanged(float currentFingerY, int scrollY, EdgeState edgeState, boolean dragging);
 
         /**
          * Called when the down motion event occurred.
@@ -413,5 +428,9 @@ public class ObservableGridView extends GridView {
          * Widget is scrolled down by swiping it up.
          */
         DOWN,
+    }
+
+    public enum EdgeState {
+        TOP, NORMAL, BOTTOM,
     }
 }

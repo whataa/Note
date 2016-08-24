@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--DragPinnerLayout's pinner bar-->
+    <declare-styleable name="pinnerBar">
+        <attr name="height" format="dimension"/>
+    </declare-styleable>
+</resources>

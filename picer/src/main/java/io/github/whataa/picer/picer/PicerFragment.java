@@ -21,16 +21,17 @@ import android.widget.Toast;
 import java.util.List;
 
 import io.github.whataa.finepic.R;
-import io.github.whataa.picer.executor.PicLoader;
 import io.github.whataa.picer.widget.DragPinnerLayout;
 import io.github.whataa.picer.widget.ObservableGridView;
+import io.github.whataa.picer.widget.ZoomImageView;
 
 public class PicerFragment extends Fragment
         implements PicerContract.View,
         AdapterView.OnItemClickListener,
-        View.OnClickListener, ObservableGridView.ObservableScrollViewCallbacks {
+        View.OnClickListener, ObservableGridView.ObservableScrollViewCallbacks, DragPinnerLayout.SlideStateCallback {
     private static final String PARAM_SIZE = "param_size";
     private static final String TAG_LISTVIEW = "tag_listview";
+    private static final String TAG = PicerFragment.class.getSimpleName();
 
     public static String tagOfCache() {
         return PicerFragment.class.getSimpleName();
@@ -52,7 +53,8 @@ public class PicerFragment extends Fragment
 
     private DragPinnerLayout dragPinnerLayout;
     private ObservableGridView gridView;
-    private ImageView ivPreview;
+    private ZoomImageView ivPreview;
+    private ImageView ivScalebtn;
     private TextView tvChosenNum, tvCurrentFolder;
     private PopupWindow popupWindow;
     private PictureAdapter mPicAdapter;
@@ -71,7 +73,11 @@ public class PicerFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_picer, container, false);
         dragPinnerLayout = (DragPinnerLayout) v.findViewById(R.id.picer_draglayout);
-        ivPreview = (ImageView) v.findViewById(R.id.picer_preview);
+        dragPinnerLayout.setCallback(this);
+        ivPreview = (ZoomImageView) v.findViewById(R.id.picer_preview);
+//        ivPreview.setOnClickListener(this);
+        ivScalebtn = (ImageView) v.findViewById(R.id.picer_scale);
+        ivScalebtn.setOnClickListener(this);
         tvChosenNum = (TextView) v.findViewById(R.id.picer_chosen_num);
         tvChosenNum.setOnClickListener(this);
         tvCurrentFolder = (TextView) v.findViewById(R.id.picer_folder);
@@ -148,8 +154,9 @@ public class PicerFragment extends Fragment
         } else {
             String path = mPicAdapter.getItemPath(i);
             mPresenter.addOrRemoveChosen(path);
-            PicLoader.instance().loadPreview(path, ivPreview);
-            dragPinnerLayout.show();
+//            PicLoader.instance().loadPreview(path, ivPreview);
+//            new ImageEvent().initData(getActivity(), ivPreview);
+            dragPinnerLayout.show(i);
         }
     }
 
@@ -158,7 +165,11 @@ public class PicerFragment extends Fragment
         int i = view.getId();
         if (i == R.id.picer_chosen_num) {
 
-        } else if (i == R.id.picer_folder) {
+        }else if(i == R.id.picer_preview) {
+            Toast.makeText(getAct(), "preview click", Toast.LENGTH_SHORT).show();
+        }else if(i == R.id.picer_scale) {
+            Toast.makeText(getAct(), "scale click", Toast.LENGTH_SHORT).show();
+        }else if (i == R.id.picer_folder) {
             int[] location = new int[2];
             tvCurrentFolder.getLocationOnScreen(location);
             popupWindow.showAtLocation(tvCurrentFolder, Gravity.NO_GRAVITY,
@@ -178,17 +189,16 @@ public class PicerFragment extends Fragment
     private static float SEN_SLIDE = 30f;
 
     @Override
-    public void onScrollChanged(int scrollY, boolean firstScroll, boolean dragging) {
+    public void onScrollChanged(float currentFingerY, int scrollY, ObservableGridView.EdgeState edgeState, boolean dragging) {
         if (downToDrag) {
-            float diff = Math.abs(gridView.getCurrentY() - dragPinnerLayout.getPinnerBottomY());
+            float diff = Math.abs(currentFingerY - dragPinnerLayout.getPinnerBottomY());
             if (diff <= SEN_SLIDE) {
                 downToDrag = false;
                 canSlide = true;
             }
         }
         if (canSlide) {
-            float shouldToY = gridView.getCurrentY();
-            dragPinnerLayout.slideTo(shouldToY);
+            dragPinnerLayout.slideTo(currentFingerY);
         }
     }
 
@@ -202,5 +212,16 @@ public class PicerFragment extends Fragment
         downToDrag = false;
         canSlide = false;
         dragPinnerLayout.determineToState();
+    }
+
+    @Override
+    public void onPinnerHide(Object param) {
+    }
+
+    @Override
+    public void onPinnerShow(Object param) {
+        if (param == null) return;
+        // after anim, scroll to click position.
+        gridView.smoothScrollToPositionFromTop((int)param, gridView.isFirstColumn((int)param)? 0 : 100);
     }
 }

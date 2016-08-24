@@ -16,6 +16,7 @@
 package io.github.whataa.picer.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.view.MotionEventCompat;
@@ -26,10 +27,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import io.github.whataa.finepic.R;
 import io.github.whataa.picer.Utils;
 
 /**
  * a layout contains a pinner.
+ *
  * @author whataa.github.io
  */
 public class DragPinnerLayout extends ViewGroup {
@@ -60,15 +63,23 @@ public class DragPinnerLayout extends ViewGroup {
     private float initX;
     private float initY;
 
+    public DragPinnerLayout(Context context) {
+        this(context, null);
+    }
+
     public DragPinnerLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        BAR_HEIGHT = Utils.dip2px(context, BAR_HEIGHT);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.pinnerBar);
+        BAR_HEIGHT = ta.getDimensionPixelSize(R.styleable.pinnerBar_height, Utils.dip2px(context, BAR_HEIGHT));
+        ta.recycle();
         dragHelper = ViewDragHelper.create(this, 1f, new DragCallback());
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+        if (getChildCount() != 2)
+            throw new RuntimeException("DragPinnerLayout should contains two children: the pinnerView & the contentView");
         pinnerView = getChildAt(0);
         contentView = getChildAt(1);
         // in order for it to be dragged
@@ -79,6 +90,18 @@ public class DragPinnerLayout extends ViewGroup {
     public void computeScroll() {
         if (dragHelper.continueSettling(true)) {
             ViewCompat.postInvalidateOnAnimation(this);
+        } else {
+            if (isTriggedByPinner) {
+                if (mCallback != null) {
+                    if (mDragOffset == 0) {
+                        mCallback.onPinnerShow(callbackParam);
+                    } else if(mDragOffset == 1) {
+                        mCallback.onPinnerHide(callbackParam);
+                    }
+                }
+                isTriggedByPinner = false;
+                callbackParam = null;
+            }
         }
     }
 
@@ -94,7 +117,8 @@ public class DragPinnerLayout extends ViewGroup {
             final float y = ev.getY();
             initX = x;
             initY = y;
-            interceptTap = dragHelper.isViewUnder(pinnerView, (int) x, (int) y);
+            // if the finger touches down at pinnerview's bar, intercept it for touchEvent.
+            interceptTap = isBarHit((int) x, (int) y);
         }
 
         return dragHelper.shouldInterceptTouchEvent(ev) || interceptTap;
@@ -103,11 +127,14 @@ public class DragPinnerLayout extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        dragHelper.processTouchEvent(ev);
         final int action = ev.getAction();
         final float x = ev.getX();
         final float y = ev.getY();
-        boolean isPinnerViewUnder = dragHelper.isViewUnder(pinnerView, (int) x, (int) y);
+        boolean isBarHit = isBarHit((int) x, (int) y);
+        // process the TouchEvent only when the bar or the visible content being touched.
+        if (isBarHit || isContentVisibleHit((int) x, (int) y)) {
+            dragHelper.processTouchEvent(ev);
+        }
         switch (action & MotionEventCompat.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
                 initX = x;
@@ -118,7 +145,7 @@ public class DragPinnerLayout extends ViewGroup {
                 final float dx = x - initX;
                 final float dy = y - initY;
                 final int slop = dragHelper.getTouchSlop();
-                if (dx * dx + dy * dy < slop * slop && isPinnerViewUnder) {
+                if (dx * dx + dy * dy < slop * slop && isBarHit) {
                     if (mDragOffset == 0) {
                         hide();
                     } else {
@@ -128,7 +155,7 @@ public class DragPinnerLayout extends ViewGroup {
                 break;
         }
 
-        return isPinnerViewUnder && isViewHit(pinnerView, (int) x, (int) y) || isViewHit(contentView, (int) x, (int) y);
+        return true;
     }
 
     @Override
@@ -145,12 +172,11 @@ public class DragPinnerLayout extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         mDragRange = pinnerView.getHeight() - BAR_HEIGHT;
-        pinnerView.layout(l, currentTop, r,
-                currentTop + pinnerView.getMeasuredHeight());
-
+        int pinnerViewBottom = currentTop + pinnerView.getMeasuredHeight();
+        pinnerView.layout(l, currentTop, r, pinnerViewBottom);
         contentView.layout(l, t, r, b);
         // init the position of contentView's content.
-        contentView.setPadding(0, currentTop + pinnerView.getMeasuredHeight(), 0, 0);
+        contentView.setPadding(0, pinnerViewBottom, 0, 0);
     }
 
     // get the current Y value of pinnerview.
@@ -170,6 +196,7 @@ public class DragPinnerLayout extends ViewGroup {
     }
 
     public void determineToState() {
+        if (mDragOffset == 1f || mDragOffset == 0f) return;
         if (mDragOffset > SEN_OFFSET) {
             hide();
         } else {
@@ -177,14 +204,38 @@ public class DragPinnerLayout extends ViewGroup {
         }
     }
 
-    public void hide() {
-        if (mDragOffset == 1) return;
+    public void hide(Object param) {
+        callbackParam = param;
+        isTriggedByPinner = true;
+        if (mDragOffset == 1) {
+            if (mCallback != null) {
+                mCallback.onPinnerHide(param);
+                callbackParam = null;
+                isTriggedByPinner = false;
+            }
+            return;
+        }
         smoothSlideTo(1f);
     }
+    public void hide() {
+        hide(null);
+    }
 
-    public void show() {
-        if (mDragOffset == 0) return;
+    public void show(Object param) {
+        callbackParam = param;
+        isTriggedByPinner = true;
+        if (mDragOffset == 0) {
+            if (mCallback != null) {
+                mCallback.onPinnerShow(param);
+                callbackParam = null;
+                isTriggedByPinner = false;
+            }
+            return;
+        }
         smoothSlideTo(0f);
+    }
+    public void show() {
+        show(null);
     }
 
     boolean smoothSlideTo(float slideOffset) {
@@ -198,15 +249,30 @@ public class DragPinnerLayout extends ViewGroup {
         return false;
     }
 
-    private boolean isViewHit(View view, int x, int y) {
+    private boolean isBarHit(int x, int y) {
         int[] viewLocation = new int[2];
-        view.getLocationOnScreen(viewLocation);
+        pinnerView.getLocationOnScreen(viewLocation);
         int[] parentLocation = new int[2];
         this.getLocationOnScreen(parentLocation);
         int screenX = parentLocation[0] + x;
         int screenY = parentLocation[1] + y;
-        return screenX >= viewLocation[0] && screenX < viewLocation[0] + view.getWidth() &&
-                screenY >= viewLocation[1] && screenY < viewLocation[1] + view.getHeight();
+        return screenX >= viewLocation[0] &&
+                screenX < viewLocation[0] + pinnerView.getWidth() &&
+                screenY >= (viewLocation[1] + pinnerView.getMeasuredHeight() - BAR_HEIGHT) &&
+                screenY < viewLocation[1] + pinnerView.getHeight();
+    }
+
+    private boolean isContentVisibleHit(int x, int y) {
+        int[] viewLocation = new int[2];
+        contentView.getLocationOnScreen(viewLocation);
+        int[] parentLocation = new int[2];
+        this.getLocationOnScreen(parentLocation);
+        int screenX = parentLocation[0] + x;
+        int screenY = parentLocation[1] + y;
+        return screenX >= viewLocation[0] &&
+                screenX < viewLocation[0] + contentView.getWidth() &&
+                screenY > (viewLocation[1] + contentView.getPaddingTop()) &&
+                screenY < viewLocation[1] + contentView.getHeight();
     }
 
     class DragCallback extends ViewDragHelper.Callback {
@@ -232,6 +298,7 @@ public class DragPinnerLayout extends ViewGroup {
             if (yvel < 0 || (yvel == 0 && mDragOffset > SEN_OFFSET)) {
                 top -= mDragRange;
             }
+            isTriggedByPinner = true;
             dragHelper.settleCapturedViewAt(releasedChild.getLeft(), top);
             invalidate();
         }
@@ -304,5 +371,21 @@ public class DragPinnerLayout extends ViewGroup {
                 return new StateSave[0];
             }
         };
+    }
+
+    // SlideStateCallback maybe need to pass some params.
+    private Object callbackParam;
+    // excluding impact of the outside, such as the GridView.
+    private boolean isTriggedByPinner;
+    private SlideStateCallback mCallback;
+
+    public void setCallback(SlideStateCallback callback) {
+        this.mCallback = callback;
+    }
+
+    public interface SlideStateCallback {
+        void onPinnerHide(Object param);
+
+        void onPinnerShow(Object param);
     }
 }

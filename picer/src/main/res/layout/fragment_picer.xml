@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:bar="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,20 +10,22 @@
         android:id="@+id/picer_draglayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_weight="1"
+        bar:height="56dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="240dp"
+            android:layout_height="320dp"
             android:background="@android:color/white"
             android:paddingBottom="2dp">
 
-            <ImageView
+            <io.github.whataa.picer.widget.ZoomImageView
+                android:src="@drawable/ic_launcher"
                 android:id="@+id/picer_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/colorLine"
-                android:scaleType="centerCrop" />
+                android:scaleType="matrix" />
 
             <TextView
                 android:id="@+id/picer_description"
