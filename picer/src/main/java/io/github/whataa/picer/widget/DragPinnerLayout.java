@@ -23,6 +23,7 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,7 +42,7 @@ public class DragPinnerLayout extends ViewGroup {
      * reserved height.
      */
     public static int BAR_HEIGHT = 56;
-    private static float SEN_OFFSET = 0.15f;
+    private static float SEN_OFFSET = 0.2f;
 
     private ViewDragHelper dragHelper;
     private View pinnerView;
@@ -289,6 +290,7 @@ public class DragPinnerLayout extends ViewGroup {
             pinnerView.setAlpha(1 - mDragOffset);
             // contentView.requestLayout() is not smooth when the layout comes complex.
             contentView.setPadding(0, currentTop + pinnerView.getMeasuredHeight(), 0, 0);
+            Log.d("onViewPositionChanged",top+" "+contentView.getPaddingTop());
         }
 
         @Override
@@ -317,7 +319,7 @@ public class DragPinnerLayout extends ViewGroup {
     @Override
     protected Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
-        return new StateSave(superState, currentTop);
+        return new StateSave(superState, currentTop, mDragOffset);
     }
 
     @Override
@@ -329,6 +331,7 @@ public class DragPinnerLayout extends ViewGroup {
         StateSave ss = (StateSave) state;
         super.onRestoreInstanceState(ss.getSuperState());
         currentTop = ss.getTop();
+        mDragOffset = ss.getOffset();
         requestLayout();
         if (currentTop != 0) pinnerView.setAlpha(0);
     }
@@ -336,14 +339,26 @@ public class DragPinnerLayout extends ViewGroup {
     static class StateSave extends BaseSavedState {
         int top;
 
-        public StateSave(Parcelable superState, int top) {
+        public float getOffset() {
+            return offset;
+        }
+
+        public void setOffset(float offset) {
+            this.offset = offset;
+        }
+
+        float offset;
+
+        public StateSave(Parcelable superState, int top, float offset) {
             super(superState);
             this.top = top;
+            this.offset = offset;
         }
 
         public StateSave(Parcel source) {
             super(source);
             top = source.readInt();
+            offset = source.readFloat();
         }
 
         public int getTop() {
@@ -358,6 +373,7 @@ public class DragPinnerLayout extends ViewGroup {
         public void writeToParcel(Parcel out, int flags) {
             super.writeToParcel(out, flags);
             out.writeInt(top);
+            out.writeFloat(offset);
         }
 
         public static final Parcelable.Creator<StateSave> CREATOR = new Creator<StateSave>() {

@@ -6,4 +6,6 @@
 
     <color name="colorLine">#c7c7c7</color>
     <color name="colorFont">#c4000000</color>
+
+    <color name="colorDark">#000</color>
 </resources>
