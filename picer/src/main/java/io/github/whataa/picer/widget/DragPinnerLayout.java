@@ -23,7 +23,6 @@ import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.ViewDragHelper;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -191,7 +190,7 @@ public class DragPinnerLayout extends ViewGroup {
             final int topBound = getPaddingTop();
             currentTop = (int) (topBound + value - pinnerView.getMeasuredHeight());
             mDragOffset = Math.abs((float) currentTop / mDragRange);
-            pinnerView.setAlpha(1 - mDragOffset);
+            if (mCallback != null) {mCallback.onPinnerScroll(mDragOffset, currentTop);}
             pinnerView.requestLayout();// this.requestLayout() is not smooth.
         }
     }
@@ -257,8 +256,8 @@ public class DragPinnerLayout extends ViewGroup {
         this.getLocationOnScreen(parentLocation);
         int screenX = parentLocation[0] + x;
         int screenY = parentLocation[1] + y;
-        return screenX >= viewLocation[0] &&
-                screenX < viewLocation[0] + pinnerView.getWidth() &&
+        return screenX >= viewLocation[0]+BAR_HEIGHT &&
+                screenX < viewLocation[0] + pinnerView.getWidth()-BAR_HEIGHT &&
                 screenY >= (viewLocation[1] + pinnerView.getMeasuredHeight() - BAR_HEIGHT) &&
                 screenY < viewLocation[1] + pinnerView.getHeight();
     }
@@ -287,10 +286,11 @@ public class DragPinnerLayout extends ViewGroup {
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
             currentTop = top;
             mDragOffset = Math.abs((float) top / mDragRange);
-            pinnerView.setAlpha(1 - mDragOffset);
+            if (mCallback!=null) {
+                mCallback.onPinnerScroll(mDragOffset, currentTop);
+            }
             // contentView.requestLayout() is not smooth when the layout comes complex.
             contentView.setPadding(0, currentTop + pinnerView.getMeasuredHeight(), 0, 0);
-            Log.d("onViewPositionChanged",top+" "+contentView.getPaddingTop());
         }
 
         @Override
@@ -333,7 +333,9 @@ public class DragPinnerLayout extends ViewGroup {
         currentTop = ss.getTop();
         mDragOffset = ss.getOffset();
         requestLayout();
-        if (currentTop != 0) pinnerView.setAlpha(0);
+        if (mCallback != null) {
+            mCallback.onPinnerScroll(mDragOffset, currentTop);
+        }
     }
 
     static class StateSave extends BaseSavedState {
@@ -400,8 +402,20 @@ public class DragPinnerLayout extends ViewGroup {
     }
 
     public interface SlideStateCallback {
+        /**
+         * @param param u can pass some param when start to drag, and use them inside of the method.
+         */
         void onPinnerHide(Object param);
 
+        /**
+         * @param offset show is 0, hide is 1.
+         * @param pinnerTop the current top position of pinnerview, equal with using pinnerview.getTop().
+         */
+        void onPinnerScroll(float offset, int pinnerTop);
+
+        /**
+         * @param param same as onPinnerHide
+         */
         void onPinnerShow(Object param);
     }
 }

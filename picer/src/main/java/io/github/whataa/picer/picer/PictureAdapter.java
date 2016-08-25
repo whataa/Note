@@ -17,9 +17,11 @@ public class PictureAdapter extends BaseAdapter {
 
     private List<Picture> datas = new ArrayList<>();
     private int mode;
+    private View.OnClickListener listener;
 
-    public PictureAdapter(int mode) {
+    public PictureAdapter(int mode, View.OnClickListener listener) {
         this.mode = mode;
+        this.listener = listener;
     }
 
     public void notifyDataSetChanged(List<Picture> pics) {
@@ -30,6 +32,14 @@ public class PictureAdapter extends BaseAdapter {
 
     public String getItemPath(int i) {
         return datas.size() < i ? null : datas.get(i).getPath();
+    }
+
+    public void setWhichItemIsPreview(int i) {
+        for (Picture picture : datas) {
+            picture.setPriview(false);
+        }
+        datas.get(i).setPriview(true);
+        notifyDataSetChanged();
     }
 
     @Override
@@ -48,17 +58,22 @@ public class PictureAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
+    public View getView(int i, View convertView, ViewGroup viewGroup) {
         Holder holder = null;
-        if (view == null) {
-            view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_gridview,viewGroup,false);
-            holder = new Holder(view);
-            view.setTag(holder);
+        if (convertView == null) {
+            convertView = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_gridview, viewGroup, false);
+            holder = new Holder(convertView);
+            convertView.setTag(holder);
+            holder.ivState.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View view) {listener.onClick(view);}
+            });
         } else {
-            holder = (Holder) view.getTag();
+            holder = (Holder) convertView.getTag();
         }
         Picture pic = (Picture) getItem(i);
-        PicLoader.instance().load(pic.getPath(), holder.ivPic);
+        if (PicLoader.isInitial()) {
+            PicLoader.instance().load(pic.getPath(), holder.ivPic);
+        }
         if (mode <= 1) {
             holder.ivState.setVisibility(View.GONE);
         } else {
@@ -69,11 +84,19 @@ public class PictureAdapter extends BaseAdapter {
                 holder.ivState.setImageResource(R.drawable.ic_check_box_outline_blank_black_26dp);
             }
         }
-        return view;
+        if (pic.isPriview()) {
+            holder.ivPic.setAlpha(0.35f);
+        } else {
+            holder.ivPic.setAlpha(1f);
+        }
+        // don't forget to set Tag for holder.ivState.
+        holder.ivState.setTag(i);
+        return convertView;
     }
 
     private static class Holder {
         ImageView ivPic, ivState;
+
         Holder(View v) {
             ivPic = (ImageView) v.findViewById(R.id.item_girdview_pic);
             ivState = (ImageView) v.findViewById(R.id.item_gridview_state);

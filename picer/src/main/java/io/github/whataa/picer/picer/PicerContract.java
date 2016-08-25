@@ -7,6 +7,8 @@ import android.os.Bundle;
 
 import java.util.List;
 
+import io.github.whataa.picer.EventCallback;
+
 public interface PicerContract {
 
     interface View {
@@ -45,6 +47,8 @@ public interface PicerContract {
          * load data.
          */
         void load();
+
+        void onCompleteBack(EventCallback callback);
 
         /**
          * if Fragment#setRetainInstance(true) sets, no need to call this method.

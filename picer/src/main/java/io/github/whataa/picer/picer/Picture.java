@@ -9,6 +9,15 @@ public class Picture {
     private String path;
     private String folderPath;
     private boolean isChosen;
+    private boolean isPriview;
+
+    public boolean isPriview() {
+        return isPriview;
+    }
+
+    public void setPriview(boolean priview) {
+        isPriview = priview;
+    }
 
     public String getFolderPath() {
         return folderPath;

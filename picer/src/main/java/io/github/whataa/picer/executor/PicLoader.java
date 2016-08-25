@@ -30,14 +30,13 @@ public class PicLoader {
         }
     }
     public static PicLoader instance() {
-        check();
         return loader;
     }
 
     public void loadPreview(String filePath, ImageView target) {
         picasso.load(Uri.fromFile(new File(filePath)))
                 .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
-                .centerCrop()
+                .centerInside()
                 .fit()
                 .into(target);
     }
@@ -49,13 +48,10 @@ public class PicLoader {
     public void load(String filePath, ImageView target, Callback callback) {
         picasso.load(Uri.fromFile(new File(filePath)))
                 .resize(200,200)
+                .onlyScaleDown()
                 .centerCrop()
                 .config(Bitmap.Config.RGB_565)
                 .into(target, callback);
-    }
-
-    public static void check() {
-        if (!isInitial()) throw new IllegalStateException("should call PicLoader#initial first");
     }
 
     public static boolean isInitial() {
@@ -64,6 +60,7 @@ public class PicLoader {
     public void shutDown() {
         if (picasso != null)
             picasso.shutdown();
+        picasso = null;
         loader = null;
     }
 }

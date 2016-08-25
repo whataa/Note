@@ -13,6 +13,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.whataa.picer.EventCallback;
 import io.github.whataa.picer.Utils;
 
 public class PicerPresenter implements PicerContract.Presenter, LoaderManager.LoaderCallbacks<Cursor> {
@@ -57,15 +58,19 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
     public String setCurrentFolder(String folderPath) {
         if (TextUtils.isEmpty(currentFolder) || TextUtils.isEmpty(folderPath))
             throw new IllegalArgumentException("currentFolder can not be null");
-        currentFolder = folderPath;
-        for (int i = folderDatas.size() - 1; i >= 0; i--) {
-            if (TextUtils.equals(folderDatas.get(i).getPath(), folderPath)) {
-                folderDatas.get(i).setCurrent(true);
-                mView.updateFolderName(folderDatas.get(i).getName());
-            } else {
-                folderDatas.get(i).setCurrent(false);
+
+        if (!currentFolder.equals(folderPath)) {
+            currentFolder = folderPath;
+            for (int i = folderDatas.size() - 1; i >= 0; i--) {
+                if (TextUtils.equals(folderDatas.get(i).getPath(), folderPath)) {
+                    folderDatas.get(i).setCurrent(true);
+                    mView.updateFolderName(folderDatas.get(i).getName());
+                } else {
+                    folderDatas.get(i).setCurrent(false);
+                }
             }
         }
+
         if (currentFolder.equals(Folder.PATH_OF_ALL)) {
             mView.updateAdapterView(picDatas, folderDatas);
             return currentFolder;
@@ -81,6 +86,20 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
         mView.updateAdapterView(folderPics, folderDatas);
         return currentFolder;
+    }
+
+    @Override
+    public void onCompleteBack(EventCallback callback) {
+        if (chosenPics.isEmpty()) {
+            mView.showHint("请选择图片");
+            return;
+        } else if (chosenPics.size() < mView.getMaxSize()) {
+            mView.showHint("请选择"+mView.getMaxSize()+"张图片");
+            return;
+        }
+        if (callback != null) {
+            callback.onEvent(EventCallback.EVENT_COMPLETE, chosenPics);
+        }
     }
 
     @Override

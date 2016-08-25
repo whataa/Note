@@ -11,37 +11,53 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        bar:height="56dp">
+        bar:height="@dimen/pinnerBarHeight">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="320dp"
             android:background="@android:color/white"
+            android:elevation="12dp"
             android:paddingBottom="2dp">
 
             <io.github.whataa.picer.widget.ZoomImageView
-                android:src="@drawable/ic_launcher"
                 android:id="@+id/picer_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/colorLine"
-                android:scaleType="matrix" />
+                android:scaleType="matrix"
+                android:src="@drawable/ic_launcher" />
 
             <TextView
                 android:id="@+id/picer_description"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center" />
+                android:gravity="center"
+                android:text="loading…" />
 
-            <ImageView
-                android:id="@+id/picer_scale"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/pinnerBarHeight"
                 android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:padding="16dp"
-                app:srcCompat="@drawable/ic_fullscreen_black_28dp" />
+                android:background="@drawable/bg_pinnerbar">
 
+                <ImageView
+                    android:id="@+id/picer_scale"
+                    android:layout_width="@dimen/pinnerBarHeight"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp"
+                    app:srcCompat="@drawable/ic_fullscreen_black_28dp" />
+
+                <ImageView
+                    android:id="@+id/picer_back"
+                    android:layout_width="@dimen/pinnerBarHeight"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentLeft="true"
+                    android:onClick="btnClick"
+                    android:padding="16dp"
+                    android:visibility="invisible"
+                    app:srcCompat="@drawable/ic_close_black_28dp" />
+            </RelativeLayout>
 
         </RelativeLayout>
 
@@ -59,24 +75,43 @@
         android:layout_height="50dp"
         android:background="@drawable/bg_bottombar">
 
-        <TextView
-            android:id="@+id/picer_chosen_num"
+        <LinearLayout
+            android:id="@+id/picer_chosen_num_wrapper"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentLeft="true"
-            android:gravity="center"
-            android:paddingLeft="18dp"
-            android:paddingRight="16dp"
-            android:textColor="@color/colorFont"
-            android:textSize="16sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                app:srcCompat="@drawable/ic_get_app_black_24dp" />
+
+            <TextView
+                android:id="@+id/picer_chosen_num"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:paddingLeft="3dp"
+                android:text="(1/6)"
+                android:textColor="@color/colorFont"
+                android:textSize="18sp" />
+
+
+        </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/picer_folder_wrapper"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_centerInParent="true"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingLeft="2dp">
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp">
 
             <TextView
                 android:id="@+id/picer_folder"
@@ -102,7 +137,7 @@
             android:gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="18dp"
-            android:text="确定"
+            android:text="完成"
             android:textColor="@color/colorFont"
             android:textSize="16sp" />
     </RelativeLayout>
