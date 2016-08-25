@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import io.github.whataa.picer.EventCallback;
 import io.github.whataa.picer.Utils;
 
 public class PicerPresenter implements PicerContract.Presenter, LoaderManager.LoaderCallbacks<Cursor> {
+    public static final String TAG = PicerPresenter.class.getSimpleName();
     private static final String STATE_FOLDER = "state_folder";
     private static final String STATE_CHOSEN = "state_chosen";
     private PicerContract.View mView;
@@ -56,18 +58,17 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
     @Override
     public String setCurrentFolder(String folderPath) {
+        Log.d(TAG, "setCurrentFolder:" + currentFolder);
         if (TextUtils.isEmpty(currentFolder) || TextUtils.isEmpty(folderPath))
             throw new IllegalArgumentException("currentFolder can not be null");
 
-        if (!currentFolder.equals(folderPath)) {
-            currentFolder = folderPath;
-            for (int i = folderDatas.size() - 1; i >= 0; i--) {
-                if (TextUtils.equals(folderDatas.get(i).getPath(), folderPath)) {
-                    folderDatas.get(i).setCurrent(true);
-                    mView.updateFolderName(folderDatas.get(i).getName());
-                } else {
-                    folderDatas.get(i).setCurrent(false);
-                }
+        currentFolder = folderPath;
+        for (int i = folderDatas.size() - 1; i >= 0; i--) {
+            if (TextUtils.equals(folderDatas.get(i).getPath(), folderPath)) {
+                folderDatas.get(i).setCurrent(true);
+                mView.updateFolderName(folderDatas.get(i).getName());
+            } else {
+                folderDatas.get(i).setCurrent(false);
             }
         }
 
@@ -94,7 +95,7 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
             mView.showHint("请选择图片");
             return;
         } else if (chosenPics.size() < mView.getMaxSize()) {
-            mView.showHint("请选择"+mView.getMaxSize()+"张图片");
+            mView.showHint("请选择" + mView.getMaxSize() + "张图片");
             return;
         }
         if (callback != null) {
@@ -104,6 +105,7 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
     @Override
     public Bundle saveState(Bundle outState) {
+        Log.d(TAG, "saveState:" + currentFolder);
         outState.putStringArrayList(STATE_CHOSEN, (ArrayList<String>) chosenPics);
         outState.putString(STATE_FOLDER, currentFolder);
         return outState;
@@ -111,6 +113,7 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
     @Override
     public void restoreState(Bundle savedInstanceState) {
+        Log.d(TAG, "restoreState:" + currentFolder);
         if (savedInstanceState != null) {
             if (currentFolder == null) {
                 currentFolder = savedInstanceState.getString(STATE_FOLDER);
@@ -126,6 +129,7 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
     @Override
     public void load() {
+        Log.d(TAG, "load:" + currentFolder);
         // if the last loader exsits and has data, initLoader will reused it by immidiately calling onLoadFinished.
         // TODO 连续调用该方法，测试在loader存在但还未得到数据的情况
         mView.getLoaderMgr().initLoader(-1, null, this);
@@ -158,6 +162,7 @@ public class PicerPresenter implements PicerContract.Presenter, LoaderManager.Lo
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        Log.d(TAG, "onLoadFinished:" + currentFolder);
         List<Picture> pics = new ArrayList<>();
         List<Folder> folders = new ArrayList<>();
         // set the default folder

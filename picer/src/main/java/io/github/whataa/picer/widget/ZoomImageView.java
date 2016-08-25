@@ -6,6 +6,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -19,6 +20,7 @@ import android.widget.Scroller;
 
 public class ZoomImageView extends ImageView implements ScaleGestureDetector.OnScaleGestureListener,
         View.OnTouchListener , ViewTreeObserver.OnGlobalLayoutListener{
+    private static final String TAG = ZoomImageView.class.getSimpleName();
     /**
      * 缩放手势的监测
      */
@@ -176,42 +178,57 @@ public class ZoomImageView extends ImageView implements ScaleGestureDetector.OnS
             //将图片完整的显示在屏幕中
             int dw = d.getIntrinsicWidth();
             int dh = d.getIntrinsicHeight();
+            Log.i(TAG, "first-------"+dw+" "+dh);
             //我们定义一个临时变量，根据图片与控件的宽高比例，来确定这个最终缩放值
             float scale = 1.0f;
-            //如果图片宽度大于控件宽度，图片高度小于控件高度
-            if (dw>width && dh<height){
-                //我们需要将图片宽度缩小，缩小至控件的宽度
-                //至于为什么要这样计算，我们可以这样想
-                //我们调用matrix.postScale（scale,scale）时，宽和高都要乘以scale的
-                //当前我们的图片宽度是dw，dw*scale=dw*（width/dw）=width,这样就等于控件宽度了
-                //我们的高度同时也乘以scale，这样能够保证图片的宽高比不改变，图片不变形
-                scale = width * 1.0f / dw;
+//            //如果图片宽度大于控件宽度，图片高度小于控件高度
+//            if (dw>width && dh<height){
+//                //我们需要将图片宽度缩小，缩小至控件的宽度
+//                //至于为什么要这样计算，我们可以这样想
+//                //我们调用matrix.postScale（scale,scale）时，宽和高都要乘以scale的
+//                //当前我们的图片宽度是dw，dw*scale=dw*（width/dw）=width,这样就等于控件宽度了
+//                //我们的高度同时也乘以scale，这样能够保证图片的宽高比不改变，图片不变形
+//                scale = width * 1.0f / dw;
+//
+//            }
+//            //如果图片的宽度小于控件宽度，图片高度大于控件高度
+//            if (dw<width && dh>height){
+//                //我们就应该将图片的高度缩小，缩小至控件的高度，计算方法同上
+//                scale = height * 1.0f / dh;
+//            }
+//            //如果图片的宽度小于控件宽度，高度小于控件高度时，我们应该将图片放大
+//            //比如图片宽度是控件宽度的1/2 ，图片高度是控件高度的1/4
+//            //如果我们将图片放大4倍，则图片的高度是和控件高度一样了，但是图片宽度就超出控件宽度了
+//            //因此我们应该选择一个最小值，那就是将图片放大2倍，此时图片宽度等于控件宽度
+//            //同理，如果图片宽度大于控件宽度，图片高度大于控件高度，我们应该将图片缩小
+//            //缩小的倍数也应该为那个最小值
+//            if ((dw < width && dh < height) || (dw > width && dh > height)){
+//                scale = Math.min(width * 1.0f / dw , height * 1.0f / dh);
+//            }
+            float wScale = dw / width;
+            float hScale = dh / height;
+            if (wScale >= 1 && hScale >= 1) {
+                scale = wScale >= hScale ? width/dw : height/dh;
+            } else {
+                if (wScale >= 1) {
+//                    scale = width / dw;
+                } else if (hScale >= 1) {
+//                    scale = height / dh;
+                } else {
+//                scale = wScale >= hScale ? width/dw : height/dh;
+                }
+            }
 
-            }
-            //如果图片的宽度小于控件宽度，图片高度大于控件高度
-            if (dw<width && dh>height){
-                //我们就应该将图片的高度缩小，缩小至控件的高度，计算方法同上
-                scale = height * 1.0f / dh;
-            }
-            //如果图片的宽度小于控件宽度，高度小于控件高度时，我们应该将图片放大
-            //比如图片宽度是控件宽度的1/2 ，图片高度是控件高度的1/4
-            //如果我们将图片放大4倍，则图片的高度是和控件高度一样了，但是图片宽度就超出控件宽度了
-            //因此我们应该选择一个最小值，那就是将图片放大2倍，此时图片宽度等于控件宽度
-            //同理，如果图片宽度大于控件宽度，图片高度大于控件高度，我们应该将图片缩小
-            //缩小的倍数也应该为那个最小值
-            if ((dw < width && dh < height) || (dw > width && dh > height)){
-                scale = Math.min(width * 1.0f / dw , height * 1.0f / dh);
-            }
-
+            //对图片进行缩放，scale为缩放的比例，后两个参数为缩放的中心点
+            mScaleMatrix.postScale(scale, scale, width / 2, height / 2);
             //我们还应该对图片进行平移操作，将图片移动到屏幕的居中位置
             //控件宽度的一半减去图片宽度的一半即为图片需要水平移动的距离
             //高度同理，大家可以画个图看一看
+            Log.i(TAG, "after-------"+dw+" "+dh+" "+width+" "+height);
             int dx = width/2 - dw/2;
             int dy = height/2 - dh/2;
-            //对图片进行平移，dx和dy分别表示水平和竖直移动的距离
-            mScaleMatrix.postTranslate(dx, dy);
-            //对图片进行缩放，scale为缩放的比例，后两个参数为缩放的中心点
-            mScaleMatrix.postScale(scale, scale, width / 2, height / 2);
+//            //对图片进行平移，dx和dy分别表示水平和竖直移动的距离
+//            mScaleMatrix.postTranslate(dx, dy);
             //将矩阵作用于我们的图片上，图片真正得到了平移和缩放
             setImageMatrix(mScaleMatrix);
 

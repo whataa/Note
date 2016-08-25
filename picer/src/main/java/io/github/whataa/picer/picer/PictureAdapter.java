@@ -85,7 +85,7 @@ public class PictureAdapter extends BaseAdapter {
             }
         }
         if (pic.isPriview()) {
-            holder.ivPic.setAlpha(0.35f);
+            holder.ivPic.setAlpha(0.25f);
         } else {
             holder.ivPic.setAlpha(1f);
         }
