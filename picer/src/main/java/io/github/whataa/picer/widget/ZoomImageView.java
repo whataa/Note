@@ -15,20 +15,18 @@ public class ZoomImageView extends ImageView {
     private static final String TAG = ZoomImageView.class.getSimpleName();
     private Scroller mScroller;
     private ScaleGestureDetector mScaleDetector;
-    private Matrix mImageMatrix;
+    private Matrix mImageMatrix = new Matrix();
     /* Last Rotation Angle */
     private int mLastAngle = 0;
     /* Pivot Point for Transforms */
     private int mPivotX, mPivotY;
 
     public ZoomImageView(Context context) {
-        super(context);
-        init(context);
+        this(context, null);
     }
 
     public ZoomImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init(context);
+        this(context, attrs, 0);
     }
 
     public ZoomImageView(Context context, AttributeSet attrs, int defStyle) {
@@ -41,20 +39,23 @@ public class ZoomImageView extends ImageView {
         mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
 
         setScaleType(ScaleType.MATRIX);
-        mImageMatrix = new Matrix();
-    }
-
-    @Override
-    public void setImageDrawable(Drawable drawable) {
-        super.setImageDrawable(drawable);
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        scaleCropToCenter();
-        translateToCenter();
+        if (isNoReset) {
+            isNoReset = false;
+            scaleCropToCenter();
+//            translateToCenter();
+        }
+    }
+    private boolean isNoReset;
+    @Override
+    public void setImageDrawable(Drawable drawable) {
+        super.setImageDrawable(drawable);
+        isNoReset = true;
     }
 
     /**
@@ -62,19 +63,22 @@ public class ZoomImageView extends ImageView {
      */
     private void translateToCenter() {
         if (getDrawable() == null) return;
+        Log.e(TAG, "translateToCenter:"
+                +getDrawable().getIntrinsicWidth()+"/"+getMeasuredWidth()+" "
+                +getDrawable().getIntrinsicHeight()+"/"+getMeasuredHeight());
         //Shift the image to the center of the view
         // getDrawable().getIntrinsicWidth() 获取表现出来的宽度（适配不同密度的屏幕），并不代表图片本身的宽度
         int translateX = (getMeasuredWidth() - getDrawable().getIntrinsicWidth()) / 2;
         int translateY = (getMeasuredHeight() - getDrawable().getIntrinsicHeight()) / 2;
-        mImageMatrix.setTranslate(translateX, translateY);
+        mImageMatrix.postTranslate(translateX, translateY);
         setImageMatrix(mImageMatrix);
     }
 
     private void scaleCropToCenter() {
         if (getDrawable() == null) return;
-        double scaleX = getDrawable().getIntrinsicWidth() / getMeasuredWidth();
-        double scaleY = getDrawable().getIntrinsicHeight() / getMeasuredHeight();
-        double scale = 1f;
+        float scaleX = (float)getDrawable().getIntrinsicWidth() / (float)getMeasuredWidth();
+        float scaleY = (float)getDrawable().getIntrinsicHeight() / (float)getMeasuredHeight();
+        float scale = 1f;
         if ((scaleX >= 1 && scaleY >= 1) || (scaleX < 1 && scaleY < 1)) {
             scale = scaleX <= scaleY ? 1/scaleX : 1/scaleY;
         } else if (scaleX >= 1) {
@@ -85,8 +89,9 @@ public class ZoomImageView extends ImageView {
         Log.e(TAG, "scaleCropToCenter:"+scale+" "+scaleX+" "+scaleY+" "
                 +getDrawable().getIntrinsicWidth()+"/"+getMeasuredWidth()+" "
                 +getDrawable().getIntrinsicHeight()+"/"+getMeasuredHeight());
-//        mImageMatrix.setScale(scale,scale);
-//        setImageMatrix(mImageMatrix);
+        // why setxxx?
+        mImageMatrix.setScale(scale,scale);
+        setImageMatrix(mImageMatrix);
     }
 
     /*

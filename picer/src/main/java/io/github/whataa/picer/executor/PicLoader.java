@@ -36,8 +36,8 @@ public class PicLoader {
     public void loadPreview(String filePath, ImageView target) {
         picasso.load(Uri.fromFile(new File(filePath)))
                 .memoryPolicy(MemoryPolicy.NO_CACHE,MemoryPolicy.NO_STORE)
-//                .centerInside()
-//                .fit()
+                .centerInside()
+                .fit()
                 .into(target);
     }
 
