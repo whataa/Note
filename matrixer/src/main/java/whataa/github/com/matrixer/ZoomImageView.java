@@ -65,40 +65,47 @@ public class ZoomImageView extends ImageView {
         isNoReset = true;
     }
 
-    private int firstPointerId;
-    private int lastPointerId;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        /**
+         * 事件将以ID最小的作为追踪手指，特别是手指数量发生变化时的情况需要注意。
+         * 否则会因为lastX、lastY引发开始MOVE时图片瞬间跳动的问题。
+         */
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                firstPointerId = event.getPointerId(event.getActionIndex());
-                Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()) + " " + event.getPointerCount());
-                break;
+                Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                lastX = event.getX();
+                lastY = event.getY();
+                return true;
+            // ID从0开始自增，若0没有则补全0，以此类推。
             case MotionEvent.ACTION_POINTER_DOWN:
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()) + " " + event.getPointerCount());
+                Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                lastX = event.getX(0);
+                lastY = event.getY(0);
+                break;
+            // 在POINTER_UP后的事件将ID最小的作为追踪手指，但是当前事件下，手指数依然为UP前的个数，所以不能直接getX(0)
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                int minID = event.getPointerId(0);
+                for (int i = 0; i < event.getPointerCount() - 1; i++) {
+                    if (event.getPointerId(i) <= minID) {
+                        minID = event.getPointerId(i);
+                    }
+                }
+                if (event.getPointerId(event.getActionIndex()) == minID) {
+                    minID = event.getPointerId(event.getActionIndex()+1);
+                }
+                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + minID);
+                lastX = event.getX(event.findPointerIndex(minID));
+                lastY = event.getY(event.findPointerIndex(minID));
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()) + " " + event.getPointerCount());
+                Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 break;
             case MotionEvent.ACTION_UP:
-                Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()) + " " + event.getPointerCount());
+                Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 break;
-            case MotionEvent.ACTION_POINTER_UP:
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()) + " " + event.getPointerCount());
-                if (firstPointerId == event.getPointerId(event.getActionIndex())) {
-                    lastX = event.getX(event.getPointerCount() - 1);
-                    lastY = event.getY(event.getPointerCount() - 1);
-                    firstPointerId = -1;
-                }
-                break;
-        }
-        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-            initX = lastX = event.getX();
-            initY = lastY = event.getY();
-            // We don't care about this event directly, but we declare
-            // interest so we can get later multi-touch events.
-            return true;
         }
 
         return doTranslate(event);
