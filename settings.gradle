@@ -1,1 +1,1 @@
-include ':app', ':picer', ':dater', ':compat-app'
+include ':app', ':picer', ':dater', ':compat-app', ':matrixer'

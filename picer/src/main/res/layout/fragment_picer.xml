@@ -20,7 +20,7 @@
             android:elevation="12dp"
             android:paddingBottom="2dp">
 
-            <io.github.whataa.picer.widget.ZoomImageView
+            <whataa.github.com.matrixer.ZoomImageView
                 android:id="@+id/picer_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

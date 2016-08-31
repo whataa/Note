@@ -27,7 +27,7 @@ import io.github.whataa.picer.EventCallback;
 import io.github.whataa.picer.executor.PicLoader;
 import io.github.whataa.picer.widget.DragPinnerLayout;
 import io.github.whataa.picer.widget.ObservableGridView;
-import io.github.whataa.picer.widget.ZoomImageView;
+import whataa.github.com.matrixer.ZoomImageView;
 
 public class PicerFragment extends Fragment
         implements PicerContract.View,
