@@ -42,7 +42,7 @@ public class ZoomImageView extends ImageView {
     private void init(Context context) {
         mScroller = new Scroller(context);
         translateScroller = new Scroller(context);
-//        mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
+        mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
         setScaleType(ScaleType.MATRIX);
     }
 
@@ -77,7 +77,7 @@ public class ZoomImageView extends ImageView {
                 Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 lastX = event.getX();
                 lastY = event.getY();
-                return true;
+                break;
             // ID从0开始自增，若0没有则补全0，以此类推。
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
@@ -102,15 +102,50 @@ public class ZoomImageView extends ImageView {
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                // 当处于缩放模式时（多手指），由于未调用平移来更新lastX，lastY记录，所以当退出缩放模式开始平移时（多手指变单手指），会出现跳动问题。
+                if (mScaleDetector.isInProgress()) {
+                    lastX = event.getX(0);
+                    lastY = event.getY(0);
+                } else {
+                    doTranslate(event);
+                }
                 break;
             case MotionEvent.ACTION_UP:
                 Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 break;
         }
-
-        return doTranslate(event);
+        // mScaleDetector需要接收完整的手势事件DOWN/MOVE/UP，否则流程异常。
+        mScaleDetector.onTouchEvent(event);
+        return true;
     }
 
+    private ScaleGestureDetector.SimpleOnScaleGestureListener mScaleListener = new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        @Override
+        public boolean onScaleBegin(ScaleGestureDetector detector) {
+            Log.e(TAG, "onScaleBegin:" + detector.getScaleFactor());
+            // 必须返回true，才可以进入onScale
+            return true;
+        }
+
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            Log.e(TAG, "onScale:" + detector.getScaleFactor());
+            // ScaleGestureDetector calculates a scale factor based on whether
+            // the fingers are moving apart or together
+            float scaleFactor = detector.getScaleFactor();
+            //Pass that factor to a scale for the image
+            mImageMatrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
+            setImageMatrix(mImageMatrix);
+            // 返回true每次进入缩放模式时重置scaleFactor，否则累加
+            return true;
+        }
+
+        @Override
+        public void onScaleEnd(ScaleGestureDetector detector) {
+            Log.e(TAG, "onScaleEnd:" + detector.getScaleFactor());
+            super.onScaleEnd(detector);
+        }
+    };
 
     /**
      * should be called after onMeasure.
@@ -197,18 +232,7 @@ public class ZoomImageView extends ImageView {
     }
 
 
-    private ScaleGestureDetector.SimpleOnScaleGestureListener mScaleListener = new ScaleGestureDetector.SimpleOnScaleGestureListener() {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            // ScaleGestureDetector calculates a scale factor based on whether
-            // the fingers are moving apart or together
-            float scaleFactor = detector.getScaleFactor();
-            //Pass that factor to a scale for the image
-            mImageMatrix.postScale(scaleFactor, scaleFactor, mPivotX, mPivotY);
-            setImageMatrix(mImageMatrix);
-            return true;
-        }
-    };
+
 
     /*
      * Operate on two-finger events to rotate the image.
