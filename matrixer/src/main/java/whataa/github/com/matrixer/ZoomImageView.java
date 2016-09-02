@@ -1,7 +1,13 @@
 package whataa.github.com.matrixer;
 
+import android.animation.TypeEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -9,22 +15,60 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
+import android.view.VelocityTracker;
+import android.view.ViewConfiguration;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.Scroller;
 
 import static whataa.github.com.matrixer.Utils.L;
 
 
 public class ZoomImageView extends ImageView {
     private static final String TAG = ZoomImageView.class.getSimpleName();
-    private Scroller mScroller;
-    private Scroller translateScroller;
+    /**
+     * 缩放、平移、旋转计算器
+     */
+    private ValueAnimator scaleAnimator;
+    private ValueAnimator transAnimator;
+    private ValueAnimator rotateAnimator;
+
     private ScaleGestureDetector mScaleDetector;
+    private VelocityTracker mVelocityTracker;
     private Matrix mImageMatrix = new Matrix();
-    /* Last Rotation Angle */
     private int mLastAngle = 0;
-    /* Pivot Point for Transforms */
+
+    /**
+     * 最大最小缩放比
+     */
+    private static final float SCALE_MAX = 6f;
+    private static final float SCALE_MIN = 0.6f;
+    /**
+     * 可以Fling的最小临界速度
+     */
+    private float mMinFlingVelocity;
+    /**
+     * VelocityTracker最大临界速度，px/s
+     */
+    private static final long VELO_MAX = 20000L;
+
+    /**
+     * 视图中心坐标
+     */
     private int mPivotX, mPivotY;
+    /**
+     * 当前追踪的手指的坐标
+     */
+    private float mLastX, mLastY;
+    /**
+     * 自动缩放、旋转的焦点坐标
+     */
+    private float mFocusX, mFocusY;
+
+    /**
+     * 是否已初始化大小和位置
+     */
+    private boolean isNoReset;
+
 
     public ZoomImageView(Context context) {
         this(context, null);
@@ -40,8 +84,8 @@ public class ZoomImageView extends ImageView {
     }
 
     private void init(Context context) {
-        mScroller = new Scroller(context);
-        translateScroller = new Scroller(context);
+        mMinFlingVelocity = ViewConfiguration.get(context).getScaledMinimumFlingVelocity();
+        mVelocityTracker = VelocityTracker.obtain();
         mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
         setScaleType(ScaleType.MATRIX);
     }
@@ -52,12 +96,12 @@ public class ZoomImageView extends ImageView {
 
         if (isNoReset) {
             isNoReset = false;
-            insideToCenter();
+            cropToCenter();
             translateToCenter();
         }
     }
 
-    private boolean isNoReset;
+
 
     @Override
     public void setImageDrawable(Drawable drawable) {
@@ -65,6 +109,13 @@ public class ZoomImageView extends ImageView {
         isNoReset = true;
     }
 
+    private Paint paint = new Paint();
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        paint.setColor(Color.YELLOW);
+        canvas.drawCircle(mFocusX, mFocusY,36f, paint);
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -75,20 +126,22 @@ public class ZoomImageView extends ImageView {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
-                lastX = event.getX();
-                lastY = event.getY();
+                mLastX = event.getX();
+                mLastY = event.getY();
                 break;
             // ID从0开始自增，若0没有则补全0，以此类推。
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
-                lastX = event.getX(0);
-                lastY = event.getY(0);
+                mLastX = event.getX(0);
+                mLastY = event.getY(0);
                 break;
             // 在POINTER_UP后的事件将ID最小的作为追踪手指，但是当前事件下，手指数依然为UP前的个数，所以不能直接getX(0)
             case MotionEvent.ACTION_POINTER_UP:
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 int minID = event.getPointerId(0);
-                for (int i = 0; i < event.getPointerCount() - 1; i++) {
+                int inX = 0, inY = 0;
+                for (int i = 0; i < event.getPointerCount(); i++) {
+                    inX += event.getX(i);
+                    inY += event.getY(i);
                     if (event.getPointerId(i) <= minID) {
                         minID = event.getPointerId(i);
                     }
@@ -96,24 +149,46 @@ public class ZoomImageView extends ImageView {
                 if (event.getPointerId(event.getActionIndex()) == minID) {
                     minID = event.getPointerId(event.getActionIndex()+1);
                 }
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + minID);
-                lastX = event.getX(event.findPointerIndex(minID));
-                lastY = event.getY(event.findPointerIndex(minID));
+                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex())+" " + minID);
+                mLastX = event.getX(event.findPointerIndex(minID));
+                mLastY = event.getY(event.findPointerIndex(minID));
+                mFocusX = inX / event.getPointerCount();
+                mFocusY = inY / event.getPointerCount();
+
                 break;
             case MotionEvent.ACTION_MOVE:
+                invalidate();
                 Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 // 当处于缩放模式时（多手指），由于未调用平移来更新lastX，lastY记录，所以当退出缩放模式开始平移时（多手指变单手指），会出现跳动问题。
                 if (mScaleDetector.isInProgress()) {
-                    lastX = event.getX(0);
-                    lastY = event.getY(0);
+                    mLastX = event.getX(0);
+                    mLastY = event.getY(0);
                 } else {
                     doTranslate(event);
                 }
                 break;
+            case MotionEvent.ACTION_CANCEL:
+                releaseVelocityTracker();
+                // not break but continue to ACTION_UP.
+
             case MotionEvent.ACTION_UP:
                 Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                float curScale = getCurrentScale();
+                if (curScale > SCALE_MAX) {
+                    autoScale(curScale, SCALE_MAX, mFocusX, mFocusY);
+                } else if (curScale < SCALE_MIN) {
+                    autoScale(curScale, SCALE_MIN, mFocusX, mFocusY);
+                }
+                mVelocityTracker.computeCurrentVelocity(1000, VELO_MAX);
+                float xVel = mVelocityTracker.getXVelocity();
+                float yVel = mVelocityTracker.getYVelocity();
+                Log.e(TAG, "Velocity:"+mMinFlingVelocity+" "+xVel+" "+yVel);
+                if (xVel >= mMinFlingVelocity || yVel >= mMinFlingVelocity) {
+                    autoTranlate(event.getX(), event.getY(), xVel / 100f, xVel / 100f);
+                }
                 break;
         }
+        obtainVelocityTracker(event);
         // mScaleDetector需要接收完整的手势事件DOWN/MOVE/UP，否则流程异常。
         mScaleDetector.onTouchEvent(event);
         return true;
@@ -130,22 +205,29 @@ public class ZoomImageView extends ImageView {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             Log.e(TAG, "onScale:" + detector.getScaleFactor());
-            // ScaleGestureDetector calculates a scale factor based on whether
-            // the fingers are moving apart or together
             float scaleFactor = detector.getScaleFactor();
-            //Pass that factor to a scale for the image
             mImageMatrix.postScale(scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
             setImageMatrix(mImageMatrix);
+
             // 返回true每次进入缩放模式时重置scaleFactor，否则累加
             return true;
         }
 
         @Override
         public void onScaleEnd(ScaleGestureDetector detector) {
-            Log.e(TAG, "onScaleEnd:" + detector.getScaleFactor());
+            // 仅当参与缩放的所有手指都UP后
             super.onScaleEnd(detector);
         }
     };
+
+    private float getCurrentScale() {
+        float values[] = new float[9];
+        mImageMatrix.getValues(values);
+        return values[Matrix.MSCALE_X];
+    }
+
+
+
 
     /**
      * should be called after onMeasure.
@@ -153,9 +235,7 @@ public class ZoomImageView extends ImageView {
     private void translateToCenter() {
         if (getDrawable() == null) return;
 
-        float values[] = new float[9];
-        mImageMatrix.getValues(values);
-        float baseScase = values[Matrix.MSCALE_X];
+        float baseScase = getCurrentScale();
         int drawableW = (int) (getDrawable().getIntrinsicWidth() * baseScase);
         int drawableH = (int) (getDrawable().getIntrinsicHeight() * baseScase);
         //Shift the image to the center of the view
@@ -226,8 +306,8 @@ public class ZoomImageView extends ImageView {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (w != oldw || h != oldh) {
             //Get the center point for future scale and rotate transforms
-            mPivotX = w / 2;
-            mPivotY = h / 2;
+            mFocusX = mPivotX = w / 2;
+            mFocusY = mPivotY = h / 2;
         }
     }
 
@@ -244,6 +324,7 @@ public class ZoomImageView extends ImageView {
         //Calculate the angle between the two fingers
         float deltaX = event.getX(0) - event.getX(1);
         float deltaY = event.getY(0) - event.getY(1);
+        // 度° = atan(斜率k)
         double radians = Math.atan(deltaY / deltaX);
         //Convert to degrees
         int degrees = (int) (radians * 180 / Math.PI);
@@ -286,15 +367,15 @@ public class ZoomImageView extends ImageView {
     }
 
 
-    private float lastX, lastY, initX, initY;
+
 
 
     private boolean doTranslate(MotionEvent event) {
         if ((event.getAction() & event.getActionMasked()) == MotionEvent.ACTION_MOVE) {
-            int dx = (int) (event.getX() - lastX);
-            int dy = (int) (event.getY() - lastY);
-            lastX = event.getX();
-            lastY = event.getY();
+            int dx = (int) (event.getX() - mLastX);
+            int dy = (int) (event.getY() - mLastY);
+            mLastX = event.getX();
+            mLastY = event.getY();
             mImageMatrix.postTranslate(dx, dy);
             setImageMatrix(mImageMatrix);
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -351,53 +432,113 @@ public class ZoomImageView extends ImageView {
         return false;
     }
 
-    class TransRunnable implements Runnable {
-        private int lastX, lastY;
 
-        public TransRunnable(int startX, int startY, int endX, int endY) {
-            lastX = startX;
-            lastY = startY;
-            translateScroller.abortAnimation();
-            translateScroller.startScroll(startX, startY, endX - startX, endY - startY, 800);
+
+
+
+    private void autoScale(float startScale, float endScale, final float pX, final float pY) {
+        if (scaleAnimator!=null && scaleAnimator.isRunning()) {
+            scaleAnimator.cancel();
+            scaleAnimator.removeAllUpdateListeners();
         }
-
-        @Override
-        public void run() {
-            if (mScroller.computeScrollOffset()) {
-                mImageMatrix.postTranslate(mScroller.getCurrX() - lastX, mScroller.getCurrY() - lastY);
-                lastX = mScroller.getCurrX();
-                lastY = mScroller.getCurrY();
+        scaleAnimator = ValueAnimator.ofFloat(startScale, endScale);
+        scaleAnimator.setInterpolator(new DecelerateInterpolator());
+        scaleAnimator.setDuration(600);//default is 300
+        scaleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float scale = (float) valueAnimator.getAnimatedValue();
+                scale = scale / getCurrentScale();
+                mImageMatrix.postScale(scale, scale, pX, pY);
                 setImageMatrix(mImageMatrix);
-                postDelayed(this, 16);
+                invalidate();
             }
-        }
+        });
+        scaleAnimator.start();
     }
 
-    class BackToInitXY implements Runnable {
-        private int newX, newY;
-
-        public BackToInitXY(float lastX, float lastY) {
-            newX = (int) lastX;
-            newY = (int) lastY;
-            mScroller.abortAnimation();
-            mScroller.startScroll(newX, newY, (int) initX - newX, (int) initY - newY, 800);
+    private void autoTranlate(final float startX, final float startY, float endX, float endY, long duration) {
+        if (transAnimator!=null && transAnimator.isRunning()) {
+            transAnimator.cancel();
+            transAnimator.removeAllUpdateListeners();
         }
+        transAnimator = ValueAnimator.ofObject(new CompatPointFEvaluator(),new PointF(startX,startY), new PointF(endX, endY));
+        transAnimator.setInterpolator(new DecelerateInterpolator());
+        transAnimator.setDuration(duration);//default is 300
+        transAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            float lastX = startX, lastY = startY;
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+//                PointF middleValue = (PointF) valueAnimator.getAnimatedValue();
+//                mImageMatrix.postTranslate(middleValue.x - lastX, middleValue.y - lastY);
+//                lastX = middleValue.x;
+//                lastY = middleValue.y;
+//                Log.e(TAG, "onAnimationUpdate "+lastX+" "+lastY);
+//                setImageMatrix(mImageMatrix);
+            }
+        });
+        transAnimator.start();
+    }
+
+    private void autoTranlate(final float startX, final float startY, float xVelocity, float yVelocity) {
+        float endX = startX + 0.6f * xVelocity;
+        float endY = startY + 0.6f * yVelocity;
+        autoTranlate(startX, startY, endX, endY, 600);
+    }
+
+    private void autoRotate(final float startAngle, float endAngle) {
+        if (rotateAnimator!=null && rotateAnimator.isRunning()) {
+            rotateAnimator.cancel();
+            rotateAnimator.removeAllUpdateListeners();
+        }
+        rotateAnimator = ValueAnimator.ofFloat(startAngle, endAngle);
+        rotateAnimator.setInterpolator(new DecelerateInterpolator());
+        rotateAnimator.setDuration(600);
+        rotateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            float lastAngle = startAngle;
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                float angle = (float) valueAnimator.getAnimatedValue();
+                mImageMatrix.postRotate(angle - lastAngle, mFocusX, mFocusY);
+                lastAngle = angle;
+                setImageMatrix(mImageMatrix);
+            }
+        });
+        rotateAnimator.start();
+    }
+
+    static class CompatPointFEvaluator implements TypeEvaluator<PointF> {
 
         @Override
-        public void run() {
-            if (mScroller.computeScrollOffset()) {// call to compute, if has valid value.
-                mImageMatrix.postTranslate(mScroller.getCurrX() - newX, mScroller.getCurrY() - newY);
-                newX = mScroller.getCurrX();
-                newY = mScroller.getCurrY();
-                setImageMatrix(mImageMatrix);
-                postDelayed(this, 16);
-            }
+        public PointF evaluate(float fraction, PointF startValue, PointF endValue) {
+            PointF middleValue = new PointF();
+            middleValue.x = (endValue.x - startValue.x) * fraction;
+            middleValue.y = (endValue.y - startValue.y) * fraction;
+            return middleValue;
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         // should remove all runnables
+        if (scaleAnimator != null) {
+            scaleAnimator.cancel();
+            scaleAnimator.removeAllUpdateListeners();
+        }
+        releaseVelocityTracker();
         super.onDetachedFromWindow();
+    }
+    private void obtainVelocityTracker( MotionEvent event) {
+        if(null == mVelocityTracker) {
+            mVelocityTracker = VelocityTracker.obtain();
+        }
+        mVelocityTracker.addMovement(event);
+    }
+    private void releaseVelocityTracker() {
+        if(null != mVelocityTracker) {
+            mVelocityTracker.clear();
+            mVelocityTracker.recycle();
+            mVelocityTracker = null;
+        }
     }
 }
