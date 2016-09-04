@@ -19,6 +19,7 @@ import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.Scroller;
 
 import static whataa.github.com.matrixer.Utils.L;
 
@@ -28,7 +29,8 @@ public class ZoomImageView extends ImageView {
     /**
      * 缩放、平移、旋转计算器
      */
-    private ValueAnimator scaleAnimator;
+    private ValueAnimator scaleCalculator;
+    private Scroller transCalulator;
     private ValueAnimator transAnimator;
     private ValueAnimator rotateAnimator;
 
@@ -49,7 +51,7 @@ public class ZoomImageView extends ImageView {
     /**
      * VelocityTracker最大临界速度，px/s
      */
-    private static final long VELO_MAX = 20000L;
+    private static final long VELO_MAX = 15000L;
 
     /**
      * 视图中心坐标
@@ -85,6 +87,7 @@ public class ZoomImageView extends ImageView {
 
     private void init(Context context) {
         mMinFlingVelocity = ViewConfiguration.get(context).getScaledMinimumFlingVelocity();
+        transCalulator = new Scroller(context);
         mVelocityTracker = VelocityTracker.obtain();
         mScaleDetector = new ScaleGestureDetector(context, mScaleListener);
         setScaleType(ScaleType.MATRIX);
@@ -139,6 +142,8 @@ public class ZoomImageView extends ImageView {
             case MotionEvent.ACTION_POINTER_UP:
                 int minID = event.getPointerId(0);
                 int inX = 0, inY = 0;
+                // TODO 验证以下方式
+                // 似乎这种方式也可以：pointerIndex == 0 ? 1 : 0;
                 for (int i = 0; i < event.getPointerCount(); i++) {
                     inX += event.getX(i);
                     inY += event.getY(i);
@@ -180,11 +185,11 @@ public class ZoomImageView extends ImageView {
                     autoScale(curScale, SCALE_MIN, mFocusX, mFocusY);
                 }
                 mVelocityTracker.computeCurrentVelocity(1000, VELO_MAX);
-                float xVel = mVelocityTracker.getXVelocity();
-                float yVel = mVelocityTracker.getYVelocity();
+                int xVel = (int) mVelocityTracker.getXVelocity();
+                int yVel = (int) mVelocityTracker.getYVelocity();
                 Log.e(TAG, "Velocity:"+mMinFlingVelocity+" "+xVel+" "+yVel);
-                if (xVel >= mMinFlingVelocity || yVel >= mMinFlingVelocity) {
-                    autoTranlate(event.getX(), event.getY(), xVel / 100f, xVel / 100f);
+                if (Math.abs(xVel) >= mMinFlingVelocity || Math.abs(yVel) >= mMinFlingVelocity) {
+                    post(new TransRunnable((int) event.getX(), (int)event.getY(),xVel,yVel));
                 }
                 break;
         }
@@ -437,14 +442,14 @@ public class ZoomImageView extends ImageView {
 
 
     private void autoScale(float startScale, float endScale, final float pX, final float pY) {
-        if (scaleAnimator!=null && scaleAnimator.isRunning()) {
-            scaleAnimator.cancel();
-            scaleAnimator.removeAllUpdateListeners();
+        if (scaleCalculator !=null && scaleCalculator.isRunning()) {
+            scaleCalculator.cancel();
+            scaleCalculator.removeAllUpdateListeners();
         }
-        scaleAnimator = ValueAnimator.ofFloat(startScale, endScale);
-        scaleAnimator.setInterpolator(new DecelerateInterpolator());
-        scaleAnimator.setDuration(600);//default is 300
-        scaleAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        scaleCalculator = ValueAnimator.ofFloat(startScale, endScale);
+        scaleCalculator.setInterpolator(new DecelerateInterpolator());
+        scaleCalculator.setDuration(500);//default is 300
+        scaleCalculator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 float scale = (float) valueAnimator.getAnimatedValue();
@@ -454,7 +459,7 @@ public class ZoomImageView extends ImageView {
                 invalidate();
             }
         });
-        scaleAnimator.start();
+        scaleCalculator.start();
     }
 
     private void autoTranlate(final float startX, final float startY, float endX, float endY, long duration) {
@@ -469,12 +474,12 @@ public class ZoomImageView extends ImageView {
             float lastX = startX, lastY = startY;
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
-//                PointF middleValue = (PointF) valueAnimator.getAnimatedValue();
-//                mImageMatrix.postTranslate(middleValue.x - lastX, middleValue.y - lastY);
-//                lastX = middleValue.x;
-//                lastY = middleValue.y;
-//                Log.e(TAG, "onAnimationUpdate "+lastX+" "+lastY);
-//                setImageMatrix(mImageMatrix);
+                PointF middleValue = (PointF) valueAnimator.getAnimatedValue();
+                mImageMatrix.postTranslate(middleValue.x - lastX, middleValue.y - lastY);
+                lastX = middleValue.x;
+                lastY = middleValue.y;
+                Log.e(TAG, "onAnimationUpdate "+lastX+" "+lastY);
+                setImageMatrix(mImageMatrix);
             }
         });
         transAnimator.start();
@@ -512,18 +517,44 @@ public class ZoomImageView extends ImageView {
         @Override
         public PointF evaluate(float fraction, PointF startValue, PointF endValue) {
             PointF middleValue = new PointF();
-            middleValue.x = (endValue.x - startValue.x) * fraction;
-            middleValue.y = (endValue.y - startValue.y) * fraction;
+            middleValue.x = startValue.x + (endValue.x - startValue.x) * fraction;
+            middleValue.y = startValue.y + (endValue.y - startValue.y) * fraction;
             return middleValue;
+        }
+    }
+
+    class TransRunnable implements Runnable {
+        float lastX, lastY;
+
+        public TransRunnable(int startX, int startY, int velocityX, int velocityY) {
+            this.lastX = startX;
+            this.lastY = startY;
+            if (!transCalulator.isFinished()) {
+                return;
+            }
+            transCalulator.fling(startX,startY,velocityX,velocityY,0,getMeasuredWidth(),0,getMeasuredHeight());
+        }
+
+        @Override
+        public void run() {
+            if (transCalulator.computeScrollOffset()) {
+                int currX = transCalulator.getCurrX();
+                int currY = transCalulator.getCurrY();
+                mImageMatrix.postTranslate(currX - lastX, currY - lastY);
+                setImageMatrix(mImageMatrix);
+                lastX = currX;
+                lastY = currY;
+                post(this);
+            }
         }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         // should remove all runnables
-        if (scaleAnimator != null) {
-            scaleAnimator.cancel();
-            scaleAnimator.removeAllUpdateListeners();
+        if (scaleCalculator != null) {
+            scaleCalculator.cancel();
+            scaleCalculator.removeAllUpdateListeners();
         }
         releaseVelocityTracker();
         super.onDetachedFromWindow();

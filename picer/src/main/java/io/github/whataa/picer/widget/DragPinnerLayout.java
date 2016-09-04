@@ -133,7 +133,7 @@ public class DragPinnerLayout extends ViewGroup {
         boolean isBarHit = isBarHit((int) x, (int) y);
         // process the TouchEvent only when the bar or the visible content being touched.
         if (isBarHit || isContentVisibleHit((int) x, (int) y)) {
-            dragHelper.processTouchEvent(ev);// 这里有问题，待处理
+            dragHelper.processTouchEvent(ev);// TODO BUG 这里有问题，待处理
         }
         switch (action & MotionEventCompat.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:

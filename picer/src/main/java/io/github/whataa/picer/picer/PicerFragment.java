@@ -27,6 +27,7 @@ import io.github.whataa.picer.EventCallback;
 import io.github.whataa.picer.executor.PicLoader;
 import io.github.whataa.picer.widget.DragPinnerLayout;
 import io.github.whataa.picer.widget.ObservableGridView;
+import whataa.github.com.matrixer.PinchImageView;
 import whataa.github.com.matrixer.ZoomImageView;
 
 public class PicerFragment extends Fragment
@@ -60,7 +61,7 @@ public class PicerFragment extends Fragment
 
     private DragPinnerLayout dragPinnerLayout;
     private ObservableGridView gridView;
-    private ZoomImageView ivPreview;
+    private PinchImageView ivPreview;
     private ImageView ivScaleBtn, ivBackBtn;
     private TextView tvChosenNum, tvCurrentFolder;
     private PopupWindow popupWindow;
@@ -81,7 +82,7 @@ public class PicerFragment extends Fragment
         View v = inflater.inflate(R.layout.fragment_picer, container, false);
         dragPinnerLayout = (DragPinnerLayout) v.findViewById(R.id.picer_draglayout);
         dragPinnerLayout.setCallback(this);
-        ivPreview = (ZoomImageView) v.findViewById(R.id.picer_preview);
+        ivPreview = (PinchImageView) v.findViewById(R.id.picer_preview);
 //        ivPreview.setOnClickListener(this);
         ivScaleBtn = (ImageView) v.findViewById(R.id.picer_scale);
         ivScaleBtn.setOnClickListener(this);
