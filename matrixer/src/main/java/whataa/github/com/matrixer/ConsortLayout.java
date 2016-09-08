@@ -48,7 +48,7 @@ public class ConsortLayout extends ViewGroup {
     protected void onFinishInflate() {
         super.onFinishInflate();
         if (getChildCount() != 2)
-            throw new RuntimeException("DragPinnerLayout should contains two children: the pinnerView & the contentView");
+            throw new RuntimeException(TAG + "should contains two children: the pinnerView & the contentView");
         headerView = getChildAt(0);
         contentView = getChildAt(1);
         // in order for it to be dragged
@@ -93,10 +93,6 @@ public class ConsortLayout extends ViewGroup {
                     mVelocityTracker = VelocityTracker.obtain();
                 }
                 mVelocityTracker.addMovement(ev);
-//                if (isScrolling()) {
-//                    Log.i(TAG,"onInterceptTouchEvent | ACTION_DOWN: "+isScrolling());
-//                    return true;
-//                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.i(TAG, "onInterceptTouchEvent | ACTION_MOVE "
@@ -128,9 +124,6 @@ public class ConsortLayout extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-//        if (isScrolling()) {
-//            return true;
-//        }
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain();
         }
@@ -162,9 +155,6 @@ public class ConsortLayout extends ViewGroup {
         return contentView.getScrollY() == 0;
     }
 
-    private boolean isScrolling() {
-        return !mScroller.isFinished();
-    }
 
     private void computeCurrVal(float currY) {
         mCurrTop = Math.max(Math.min(currY, getPaddingTop()), -mScrollRange);
@@ -173,7 +163,7 @@ public class ConsortLayout extends ViewGroup {
     }
 
     private void determineTarget(MotionEvent ev) {
-        float dy = 0;
+        float dy;
         if (mVelocityTracker.getYVelocity() < 0) {
             dy = -mScrollRange - mCurrTop;
         } else {
@@ -189,6 +179,16 @@ public class ConsortLayout extends ViewGroup {
             computeCurrVal(mScroller.getCurrY());
             headerView.requestLayout();
             invalidate();
+        }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (mVelocityTracker != null) {
+            mVelocityTracker.clear();
+            mVelocityTracker .recycle();
+            mVelocityTracker = null;
         }
     }
 }
