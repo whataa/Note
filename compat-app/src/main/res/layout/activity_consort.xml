@@ -98,7 +98,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="LAST-ITEM"
-                        android:textColor="#333f51b5"
+                        android:textColor="#ffffff"
                         android:textSize="24sp" />
                 </FrameLayout>
             </LinearLayout>

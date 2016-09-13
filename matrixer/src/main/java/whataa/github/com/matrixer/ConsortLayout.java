@@ -25,26 +25,30 @@ import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Scroller;
 
 /**
+ * a layout can hide / show the headerView just like the Coordinator Layout with CollapsingToolbarLayout.<p/>
  * created by yanglinjiang on 2016/9/13
  */
 public class ConsortLayout extends ViewGroup {
 
     public static final String TAG = ConsortLayout.class.getSimpleName();
-
+    public static final int SCROLL_TIME = 500;
     private Scroller mScroller;
     private VelocityTracker mVelocityTracker;
     private View headerView;
     private View contentView;
     private int mTouchSlop;
     private int mMaxTop;
+
+    // open is 1.0f, close is 0.0f.
     private float currOffset = 1f;
 
-    private float currTop, lastTop;
-    private float lastX, lastY;
+    private float currTop, lastTop, lastX, lastY;
     private boolean isInLayout;
+    // in case of the childview not consuming touch-event.
     private boolean isIntercept;
 
 
@@ -63,7 +67,7 @@ public class ConsortLayout extends ViewGroup {
 
     private void init(Context context) {
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
-        mScroller = new Scroller(context);
+        mScroller = new Scroller(context, new DecelerateInterpolator());
     }
 
     @Override
@@ -220,6 +224,11 @@ public class ConsortLayout extends ViewGroup {
         return true;
     }
 
+    /**
+     * obtain the correct value from the tracking finger.
+     *
+     * @param ev
+     */
     private void onPointerUp(MotionEvent ev) {
         int minID = ev.getPointerId(0);
         for (int i = 0; i < ev.getPointerCount(); i++) {
@@ -256,13 +265,16 @@ public class ConsortLayout extends ViewGroup {
     }
 
     private void determineTarget() {
+        if (currOffset == 1f || currOffset == 0f) {
+            return;
+        }
         float dy;
         if (mVelocityTracker.getYVelocity() < 0) {
             dy = mMaxTop - currTop;
         } else {
             dy = 0f - currTop;
         }
-        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) dy);
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) dy, SCROLL_TIME);
         invalidate();
     }
 
@@ -279,13 +291,13 @@ public class ConsortLayout extends ViewGroup {
 
     public void open() {
         if (isScrolling() || currOffset == 1f) return;
-        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) -currTop);
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) -currTop, SCROLL_TIME);
         invalidate();
     }
 
     public void close() {
         if (isScrolling() || currOffset == 0f) return;
-        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) (mMaxTop - currTop));
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) (mMaxTop - currTop), SCROLL_TIME);
         invalidate();
     }
 
@@ -308,9 +320,22 @@ public class ConsortLayout extends ViewGroup {
     }
 
     //----------------------------------------------------------------------------------------------
+
     public interface ConsortHelper {
+        /**
+         * At the right time to return true to make the program automatically open. <br/>
+         * such as the time when adapterView's scrollY is 0.<p/>
+         * eg: return scrollView.getScrollY() == 0;
+         *
+         * @return
+         */
         boolean shouldOpen();
 
+        /**
+         * the value changes between 0f and 1f by scrolling.
+         *
+         * @param offset
+         */
         void onScrolling(float offset);
     }
 
@@ -348,9 +373,6 @@ public class ConsortLayout extends ViewGroup {
 
     public static class LayoutParam extends MarginLayoutParams {
 
-        /**
-         * open is 1.0f, close is 0.0f.
-         */
         public float onScreen;
 
         public LayoutParam(LayoutParams source) {
