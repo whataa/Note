@@ -9,16 +9,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="wrap_content"
             android:background="@color/colorPrimary">
 
             <ImageView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="400dp"
                 android:src="@drawable/ic_launcher" />
         </FrameLayout>
+        </ScrollView>
 
         <ScrollView
             android:id="@+id/scrollView"
@@ -40,7 +44,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="FIRST-ITEM"
-                        android:textColor="@android:color/white"
+                        android:textColor="#CC3f51b5"
                         android:textSize="24sp" />
                 </FrameLayout>
 
@@ -94,7 +98,7 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="LAST-ITEM"
-                        android:textColor="@android:color/white"
+                        android:textColor="#333f51b5"
                         android:textSize="24sp" />
                 </FrameLayout>
             </LinearLayout>

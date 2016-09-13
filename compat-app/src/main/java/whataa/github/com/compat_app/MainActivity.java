@@ -25,5 +25,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void btnClick3(View view) {
+        startActivity(new Intent(this, TestScrollToActivity.class));
     }
 }

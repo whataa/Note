@@ -1,7 +1,24 @@
+/*
+ * Copyright 2016 whataa.github.io
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package whataa.github.com.matrixer;
 
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -10,6 +27,9 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 
+/**
+ * created by yanglinjiang on 2016/9/13
+ */
 public class ConsortLayout extends ViewGroup {
 
     public static final String TAG = ConsortLayout.class.getSimpleName();
@@ -19,13 +39,14 @@ public class ConsortLayout extends ViewGroup {
     private View headerView;
     private View contentView;
     private int mTouchSlop;
-    private int mScrollRange;
+    private int mMaxTop;
     private float currOffset = 1f;
 
     private float currTop, lastTop;
     private float lastX, lastY;
     private boolean isInLayout;
     private boolean isIntercept;
+
 
     public ConsortLayout(Context context) {
         this(context, null);
@@ -66,16 +87,18 @@ public class ConsortLayout extends ViewGroup {
         LayoutParam lpContent = (LayoutParam) contentView.getLayoutParams();
 
         int contentWidthSpec = MeasureSpec.makeMeasureSpec(
-                widthSize - lpContent.leftMargin - lpContent.rightMargin, MeasureSpec.EXACTLY);
+                widthSize - lpContent.leftMargin - lpContent.rightMargin
+                        - getPaddingLeft() - getPaddingRight(), MeasureSpec.EXACTLY);
         int contentHeightSpec = MeasureSpec.makeMeasureSpec(
-                heightSize - lpContent.topMargin - lpContent.bottomMargin, MeasureSpec.EXACTLY);
+                heightSize - lpContent.topMargin - lpContent.bottomMargin
+                        - getPaddingTop() - getPaddingBottom(), MeasureSpec.EXACTLY);
         contentView.measure(contentWidthSpec, contentHeightSpec);
 
         int headerWidthSpec = getChildMeasureSpec(widthMeasureSpec,
-                lpHead.leftMargin + lpHead.rightMargin,
+                lpHead.leftMargin + lpHead.rightMargin + getPaddingLeft() + getPaddingRight(),
                 lpHead.width);
         int headerHeightSpec = getChildMeasureSpec(heightMeasureSpec,
-                lpHead.topMargin + lpHead.bottomMargin,
+                lpHead.topMargin + lpHead.bottomMargin + getPaddingTop() + getPaddingBottom(),
                 lpHead.height);
         headerView.measure(headerWidthSpec, headerHeightSpec);
 
@@ -84,7 +107,11 @@ public class ConsortLayout extends ViewGroup {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (w != oldw || h != oldh) {
-            mScrollRange = headerView.getMeasuredHeight();
+            LayoutParam lpHead = (LayoutParam) headerView.getLayoutParams();
+            mMaxTop = -(lpHead.topMargin + headerView.getMeasuredHeight());
+            // init params
+            applyParamAndDispatch(currOffset);
+            lastTop = currTop = !isHeaderHide() ? 0 : mMaxTop;
         }
     }
 
@@ -100,14 +127,18 @@ public class ConsortLayout extends ViewGroup {
         int headerTop = -headerHeight + (int) (headerHeight * lpHead.onScreen);
         float newOffset = (float) (headerHeight + headerTop) / headerHeight;
 
-        headerView.layout(lpHead.leftMargin, headerTop,
-                lpHead.leftMargin + headerWidth, headerTop + headerHeight);
+        headerView.layout(getPaddingLeft() + lpHead.leftMargin,
+                getPaddingTop() + headerTop + lpHead.topMargin,
+                getPaddingLeft() + lpHead.leftMargin + headerWidth,
+                getPaddingTop() + headerTop + headerHeight);
         if (newOffset != lpContent.onScreen) {
             applyParamAndDispatch(newOffset);
         }
-        contentView.layout(lpContent.leftMargin, lpContent.topMargin + headerView.getBottom(),
-                lpContent.leftMargin + contentView.getMeasuredWidth(),
-                lpContent.topMargin + headerView.getBottom() + contentView.getMeasuredHeight());
+        int contentTop = lpContent.topMargin + headerView.getBottom() + lpHead.bottomMargin;
+        contentView.layout(getPaddingLeft() + lpContent.leftMargin,
+                contentTop,
+                getPaddingLeft() + lpContent.leftMargin + contentView.getMeasuredWidth(),
+                contentTop + contentView.getMeasuredHeight());
 
         isInLayout = false;
     }
@@ -178,7 +209,7 @@ public class ConsortLayout extends ViewGroup {
                 lastY = ev.getY();
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-
+                onPointerUp(ev);
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
@@ -187,6 +218,19 @@ public class ConsortLayout extends ViewGroup {
                 break;
         }
         return true;
+    }
+
+    private void onPointerUp(MotionEvent ev) {
+        int minID = ev.getPointerId(0);
+        for (int i = 0; i < ev.getPointerCount(); i++) {
+            if (ev.getPointerId(i) <= minID) {
+                minID = ev.getPointerId(i);
+            }
+        }
+        if (ev.getPointerId(ev.getActionIndex()) == minID) {
+            minID = ev.getPointerId(ev.getActionIndex() + 1);
+        }
+        lastY = ev.getY(ev.findPointerIndex(minID));
     }
 
     public boolean isHeaderHide() {
@@ -202,8 +246,8 @@ public class ConsortLayout extends ViewGroup {
     }
 
     private void computeAndoffset(float currY) {
-        currTop = Math.max(Math.min(currY, 0), -mScrollRange);
-        currOffset = 1 - Math.abs(currTop / mScrollRange);
+        currTop = Math.max(Math.min(currY, 0), mMaxTop);
+        currOffset = 1 - Math.abs(currTop / mMaxTop);
         applyParamAndDispatch(currOffset);
         int dy = (int) (currTop - lastTop);
         headerView.offsetTopAndBottom(dy);
@@ -214,7 +258,7 @@ public class ConsortLayout extends ViewGroup {
     private void determineTarget() {
         float dy;
         if (mVelocityTracker.getYVelocity() < 0) {
-            dy = -mScrollRange - currTop;
+            dy = mMaxTop - currTop;
         } else {
             dy = 0f - currTop;
         }
@@ -241,7 +285,7 @@ public class ConsortLayout extends ViewGroup {
 
     public void close() {
         if (isScrolling() || currOffset == 0f) return;
-        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) (-mScrollRange - currTop));
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) (mMaxTop - currTop));
         invalidate();
     }
 
@@ -302,12 +346,12 @@ public class ConsortLayout extends ViewGroup {
         return new LayoutParam(getContext(), attrs);
     }
 
-    static class LayoutParam extends MarginLayoutParams {
+    public static class LayoutParam extends MarginLayoutParams {
 
         /**
          * open is 1.0f, close is 0.0f.
          */
-        public float onScreen = 1f;
+        public float onScreen;
 
         public LayoutParam(LayoutParams source) {
             super(source);
@@ -324,5 +368,60 @@ public class ConsortLayout extends ViewGroup {
         public LayoutParam(Context c, AttributeSet attrs) {
             super(c, attrs);
         }
+    }
+
+    //----------------------------------------------------------------------------------------------
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        return new StateSave(superState, currOffset);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        if (!(state instanceof StateSave)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
+        StateSave ss = (StateSave) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+        // we needn't do anything beacuse of the time this method being called.
+        currOffset = ss.getOffset();
+    }
+
+    static class StateSave extends BaseSavedState {
+        float offset;
+
+        StateSave(Parcelable superState, float currOffset) {
+            super(superState);
+            offset = currOffset;
+        }
+
+        public float getOffset() {
+            return offset;
+        }
+
+        StateSave(Parcel source) {
+            super(source);
+            offset = source.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
+            out.writeFloat(offset);
+        }
+
+        public static final Parcelable.Creator<StateSave> CREATOR = new Creator<StateSave>() {
+            @Override
+            public StateSave createFromParcel(Parcel parcel) {
+                return new StateSave(parcel);
+            }
+
+            @Override
+            public StateSave[] newArray(int i) {
+                return new StateSave[0];
+            }
+        };
     }
 }
