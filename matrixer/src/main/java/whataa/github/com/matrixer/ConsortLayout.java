@@ -3,7 +3,6 @@ package whataa.github.com.matrixer;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -19,12 +18,14 @@ public class ConsortLayout extends ViewGroup {
     private VelocityTracker mVelocityTracker;
     private View headerView;
     private View contentView;
-    private int mScrollRange;
-    private float mCurrTop;
-    private float mCurrOffset;
     private int mTouchSlop;
+    private int mScrollRange;
+    private float currOffset = 1f;
 
+    private float currTop, lastTop;
     private float lastX, lastY;
+    private boolean isInLayout;
+    private boolean isIntercept;
 
     public ConsortLayout(Context context) {
         this(context, null);
@@ -48,22 +49,36 @@ public class ConsortLayout extends ViewGroup {
     protected void onFinishInflate() {
         super.onFinishInflate();
         if (getChildCount() != 2)
-            throw new RuntimeException(TAG + "should contains two children: the pinnerView & the contentView");
+            throw new RuntimeException(TAG + "should contains two children: the headerView & the contentView");
         headerView = getChildAt(0);
         contentView = getChildAt(1);
-        // in order for it to be dragged
         headerView.bringToFront();
     }
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        measureChildren(widthMeasureSpec, heightMeasureSpec);
 
-        int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
-        int maxHeight = MeasureSpec.getSize(heightMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        setMeasuredDimension(widthSize, heightSize);
 
-        setMeasuredDimension(resolveSizeAndState(maxWidth, widthMeasureSpec, 0),
-                resolveSizeAndState(maxHeight, heightMeasureSpec, 0));
+        LayoutParam lpHead = (LayoutParam) headerView.getLayoutParams();
+        LayoutParam lpContent = (LayoutParam) contentView.getLayoutParams();
+
+        int contentWidthSpec = MeasureSpec.makeMeasureSpec(
+                widthSize - lpContent.leftMargin - lpContent.rightMargin, MeasureSpec.EXACTLY);
+        int contentHeightSpec = MeasureSpec.makeMeasureSpec(
+                heightSize - lpContent.topMargin - lpContent.bottomMargin, MeasureSpec.EXACTLY);
+        contentView.measure(contentWidthSpec, contentHeightSpec);
+
+        int headerWidthSpec = getChildMeasureSpec(widthMeasureSpec,
+                lpHead.leftMargin + lpHead.rightMargin,
+                lpHead.width);
+        int headerHeightSpec = getChildMeasureSpec(heightMeasureSpec,
+                lpHead.topMargin + lpHead.bottomMargin,
+                lpHead.height);
+        headerView.measure(headerWidthSpec, headerHeightSpec);
+
     }
 
     @Override
@@ -75,18 +90,42 @@ public class ConsortLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        headerView.layout(l, (int) mCurrTop, r, (int) (mCurrTop + headerView.getMeasuredHeight()));
-        contentView.layout(l, t, r, b);
-        // init the position of contentView's content.
-        contentView.setPadding(0, headerView.getBottom(), 0, 0);
+        isInLayout = true;
+        LayoutParam lpHead = (LayoutParam) headerView.getLayoutParams();
+        LayoutParam lpContent = (LayoutParam) contentView.getLayoutParams();
+
+        int headerWidth = headerView.getMeasuredWidth();
+        int headerHeight = headerView.getMeasuredHeight();
+        // current top
+        int headerTop = -headerHeight + (int) (headerHeight * lpHead.onScreen);
+        float newOffset = (float) (headerHeight + headerTop) / headerHeight;
+
+        headerView.layout(lpHead.leftMargin, headerTop,
+                lpHead.leftMargin + headerWidth, headerTop + headerHeight);
+        if (newOffset != lpContent.onScreen) {
+            applyParamAndDispatch(newOffset);
+        }
+        contentView.layout(lpContent.leftMargin, lpContent.topMargin + headerView.getBottom(),
+                lpContent.leftMargin + contentView.getMeasuredWidth(),
+                lpContent.topMargin + headerView.getBottom() + contentView.getMeasuredHeight());
+
+        isInLayout = false;
+    }
+
+    @Override
+    public void requestLayout() {
+        if (!isInLayout) {
+            super.requestLayout();
+        }
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.i(TAG, "onInterceptTouchEvent");
+        if (isScrolling()) {
+            return true;
+        }
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                Log.i(TAG, "onInterceptTouchEvent | ACTION_DOWN");
                 lastX = ev.getX();
                 lastY = ev.getY();
                 if (mVelocityTracker == null) {
@@ -95,12 +134,6 @@ public class ConsortLayout extends ViewGroup {
                 mVelocityTracker.addMovement(ev);
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.i(TAG, "onInterceptTouchEvent | ACTION_MOVE "
-                        + lastY + " "
-                        + ev.getY() + " "
-                        + isHeaderHide() + " "
-                        + isContentViewTop() + " "
-                        + mTouchSlop);
                 float diffX = ev.getX() - lastX;
                 float diffY = ev.getY() - lastY;
                 if (Math.abs(diffX) > Math.abs(diffY) || Math.abs(diffY) < mTouchSlop) {
@@ -109,75 +142,113 @@ public class ConsortLayout extends ViewGroup {
                 if (diffY < 0) {
                     if (!isHeaderHide()) {
                         lastY = ev.getY();
+                        isIntercept = true;
                         return true;
                     }
                 } else if (diffY > 0) {
                     if (isHeaderHide() && isContentViewTop()) {
                         lastY = ev.getY();
+                        isIntercept = true;
                         return true;
                     }
                 }
                 break;
         }
+        isIntercept = false;
         return false;
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
+        if (!isIntercept || isScrolling()) {
+            return false;
+        }
         if (mVelocityTracker == null) {
             mVelocityTracker = VelocityTracker.obtain();
         }
         mVelocityTracker.addMovement(ev);
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                Log.i(TAG, "onTouchEvent | ACTION_DOWN");
                 return true;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                lastY = ev.getY(0);
+                break;
             case MotionEvent.ACTION_MOVE:
-                Log.i(TAG, "onTouchEvent | ACTION_MOVE");
-                computeCurrVal(mCurrTop + ev.getY() - lastY);
-                headerView.requestLayout();
+                computeAndoffset(currTop + ev.getY() - lastY);
                 lastY = ev.getY();
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
                 mVelocityTracker.computeCurrentVelocity(1000);
-                determineTarget(ev);
+                determineTarget();
                 break;
         }
         return true;
     }
 
     public boolean isHeaderHide() {
-        return mCurrOffset == 1f;
+        return currOffset == 0f;
     }
 
     private boolean isContentViewTop() {
-        return contentView.getScrollY() == 0;
+        return mHelper != null && mHelper.shouldOpen();
     }
 
-
-    private void computeCurrVal(float currY) {
-        mCurrTop = Math.max(Math.min(currY, getPaddingTop()), -mScrollRange);
-        mCurrOffset = Math.abs(mCurrTop / mScrollRange);
-        Log.i(TAG, "computeCurrVal " + currY + " -" + mScrollRange + " " + mCurrTop + " " + mCurrOffset);
+    private boolean isScrolling() {
+        return !mScroller.isFinished();
     }
 
-    private void determineTarget(MotionEvent ev) {
+    private void computeAndoffset(float currY) {
+        currTop = Math.max(Math.min(currY, 0), -mScrollRange);
+        currOffset = 1 - Math.abs(currTop / mScrollRange);
+        applyParamAndDispatch(currOffset);
+        int dy = (int) (currTop - lastTop);
+        headerView.offsetTopAndBottom(dy);
+        contentView.offsetTopAndBottom(dy);
+        lastTop = currTop;
+    }
+
+    private void determineTarget() {
         float dy;
         if (mVelocityTracker.getYVelocity() < 0) {
-            dy = -mScrollRange - mCurrTop;
+            dy = -mScrollRange - currTop;
         } else {
-            dy = getPaddingTop() - mCurrTop;
+            dy = 0f - currTop;
         }
-        mScroller.startScroll(headerView.getLeft(), (int) mCurrTop, 0, (int) dy);
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) dy);
+        invalidate();
+    }
+
+    void applyParamAndDispatch(float slideOffset) {
+        LayoutParam lp = (LayoutParam) headerView.getLayoutParams();
+        if (slideOffset == lp.onScreen) {
+            return;
+        }
+        lp.onScreen = slideOffset;
+        if (mHelper != null) {
+            mHelper.onScrolling(lp.onScreen);
+        }
+    }
+
+    public void open() {
+        if (isScrolling() || currOffset == 1f) return;
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) -currTop);
+        invalidate();
+    }
+
+    public void close() {
+        if (isScrolling() || currOffset == 0f) return;
+        mScroller.startScroll(headerView.getLeft(), (int) currTop, 0, (int) (-mScrollRange - currTop));
         invalidate();
     }
 
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
-            computeCurrVal(mScroller.getCurrY());
-            headerView.requestLayout();
+            computeAndoffset(mScroller.getCurrY());
             invalidate();
         }
     }
@@ -187,8 +258,71 @@ public class ConsortLayout extends ViewGroup {
         super.onDetachedFromWindow();
         if (mVelocityTracker != null) {
             mVelocityTracker.clear();
-            mVelocityTracker .recycle();
+            mVelocityTracker.recycle();
             mVelocityTracker = null;
+        }
+    }
+
+    //----------------------------------------------------------------------------------------------
+    public interface ConsortHelper {
+        boolean shouldOpen();
+
+        void onScrolling(float offset);
+    }
+
+    private ConsortHelper mHelper;
+
+    public void setHelper(ConsortHelper helper) {
+        mHelper = helper;
+    }
+
+
+    //----------------------------------------------------------------------------------------------
+    @Override
+    protected LayoutParams generateDefaultLayoutParams() {
+        return new LayoutParam(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+    }
+
+    @Override
+    protected LayoutParams generateLayoutParams(LayoutParams p) {
+        return p instanceof LayoutParam
+                ? new LayoutParam((LayoutParam) p)
+                : p instanceof ViewGroup.MarginLayoutParams
+                ? new LayoutParam((MarginLayoutParams) p)
+                : new LayoutParam(p);
+    }
+
+    @Override
+    protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
+        return p instanceof LayoutParam && super.checkLayoutParams(p);
+    }
+
+    @Override
+    public ViewGroup.LayoutParams generateLayoutParams(AttributeSet attrs) {
+        return new LayoutParam(getContext(), attrs);
+    }
+
+    static class LayoutParam extends MarginLayoutParams {
+
+        /**
+         * open is 1.0f, close is 0.0f.
+         */
+        public float onScreen = 1f;
+
+        public LayoutParam(LayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParam(MarginLayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParam(int width, int height) {
+            super(width, height);
+        }
+
+        public LayoutParam(Context c, AttributeSet attrs) {
+            super(c, attrs);
         }
     }
 }

@@ -5,6 +5,7 @@
     android:orientation="vertical">
 
     <whataa.github.com.matrixer.ConsortLayout
+        android:id="@+id/consortlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -12,13 +13,15 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:background="@color/colorPrimary">
+
             <ImageView
-                android:src="@drawable/ic_launcher"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-            </FrameLayout>
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_launcher" />
+        </FrameLayout>
 
         <ScrollView
+            android:id="@+id/scrollView"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -30,43 +33,70 @@
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
-                    android:background="#333f51b5" />
+                    android:background="#333f51b5">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="FIRST-ITEM"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp" />
+                </FrameLayout>
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#443f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#553f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#663f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#773f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#883f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#993f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#AA3f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:background="#BB3f51b5" />
+
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
-                    android:background="#CC3f51b5" />
+                    android:background="#CC3f51b5">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="LAST-ITEM"
+                        android:textColor="@android:color/white"
+                        android:textSize="24sp" />
+                </FrameLayout>
             </LinearLayout>
         </ScrollView>
     </whataa.github.com.matrixer.ConsortLayout>
