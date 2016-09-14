@@ -47,6 +47,8 @@ public class ConsortLayout extends ViewGroup {
     private float currOffset = 1f;
 
     private float currTop, lastTop, lastX, lastY;
+    // record it to update mMaxTop value...
+    private int headerH, contentH;
     private boolean isInLayout;
     // in case of the childview not consuming touch-event.
     private boolean isIntercept;
@@ -106,16 +108,10 @@ public class ConsortLayout extends ViewGroup {
                 lpHead.height);
         headerView.measure(headerWidthSpec, headerHeightSpec);
 
-    }
-
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        if (w != oldw || h != oldh) {
-            LayoutParam lpHead = (LayoutParam) headerView.getLayoutParams();
-            mMaxTop = -(lpHead.topMargin + headerView.getMeasuredHeight());
-            // init params
-            applyParamAndDispatch(currOffset);
-            lastTop = currTop = !isHeaderHide() ? 0 : mMaxTop;
+        if (headerH != headerView.getMeasuredHeight() || contentH != contentView.getMeasuredHeight()) {
+            onChildSizeChanged();
+            headerH = headerView.getMeasuredHeight();
+            contentH = contentView.getMeasuredHeight();
         }
     }
 
@@ -145,6 +141,17 @@ public class ConsortLayout extends ViewGroup {
                 contentTop + contentView.getMeasuredHeight());
 
         isInLayout = false;
+    }
+
+    /**
+     * in case of the layout changes dynamically according to the data.
+     */
+    private void onChildSizeChanged() {
+        LayoutParam lpHead = (LayoutParam) headerView.getLayoutParams();
+        mMaxTop = -(lpHead.topMargin + headerView.getMeasuredHeight());
+        // init params
+        applyParamAndDispatch(currOffset);
+        lastTop = currTop = !isHeaderHide() ? 0 : mMaxTop;
     }
 
     @Override
