@@ -11,6 +11,8 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -120,31 +122,62 @@ public class ZoomImageView extends ImageView {
         canvas.drawCircle(mFocusX, mFocusY,36f, paint);
     }
 
+    private int idOfActivePointer;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         /**
          * 事件将以ID最小的作为追踪手指，特别是手指数量发生变化时的情况需要注意。
          * 否则会因为lastX、lastY引发开始MOVE时图片瞬间跳动的问题。
          */
+        printMotion(event);
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                idOfActivePointer = event.getPointerId(0);
+
+//                Log.e(TAG, "MotionEvent.ACTION_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 mLastX = event.getX();
                 mLastY = event.getY();
                 break;
             // ID从0开始自增，若0没有则补全0，以此类推。
             case MotionEvent.ACTION_POINTER_DOWN:
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+//                Log.e(TAG, "MotionEvent.ACTION_POINTER_DOWN:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+                // 若当前DOWN的手指为追踪手指，则表示上一个追踪手指的ID!=0，所以需要更新lastXY为当前手指的坐标
                 mLastX = event.getX(0);
                 mLastY = event.getY(0);
+
+                idOfActivePointer = event.getPointerId(0);
                 break;
             // 在POINTER_UP后的事件将ID最小的作为追踪手指，但是当前事件下，手指数依然为UP前的个数，所以不能直接getX(0)
             case MotionEvent.ACTION_POINTER_UP:
+
+                // TODO 验证以下方式
+                // 当前松开的手指的索引
+                int indexOfUpPointer = event.getActionIndex();
+                // 当前松开的手指的ID
+                int idOfUpPointer = event.getPointerId(indexOfUpPointer);
+                // 如果当前松开的手指就是松开前被追踪的手指（即当前手指ID最小），
+                // 那么在POINTER_UP后所追踪的手指将被更改为剩余手指中ID最小的，
+                // 所以此时应该找到当前次小ID的手指，记录其坐标
+                if (indexOfUpPointer == 0) {
+                    // 手指的索引和ID的对应规则是：被追踪的手指的ID最小，
+                    // 且索引越小，对应的ID越小；
+                    // 所以当被追踪的手指的索引为0时，则次小ID的手指的索引为1；
+                    // 当被追踪手指的索引不为0时
+                    // （若在POINTER_DOWN时未更新idOfActivePointer，
+                    // 则会导致即是当前松开的手指不是被追踪的手指，也会进入该判断中，
+                    // 则此时的indexOfUpPointer就不为0），次小ID的手指的索引为0；
+                    Log.d(TAG, idOfActivePointer+" "+indexOfUpPointer);
+                    int newPointer = 1;
+                    mLastX = event.getX(newPointer);
+                    mLastY = event.getY(newPointer);
+                    // 最后，记录接下来将被追踪的手指的ID
+                    idOfActivePointer = event.getPointerId(newPointer);
+                }
+
+                // 从索引为0的手指开始，查找ID最小的手指
                 int minID = event.getPointerId(0);
                 int inX = 0, inY = 0;
-                // TODO 验证以下方式
-                // 似乎这种方式也可以：pointerIndex == 0 ? 1 : 0;
-                for (int i = 0; i < event.getPointerCount(); i++) {
+                for (int i = 1; i < event.getPointerCount(); i++) {
                     inX += event.getX(i);
                     inY += event.getY(i);
                     if (event.getPointerId(i) <= minID) {
@@ -154,16 +187,16 @@ public class ZoomImageView extends ImageView {
                 if (event.getPointerId(event.getActionIndex()) == minID) {
                     minID = event.getPointerId(event.getActionIndex()+1);
                 }
-                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex())+" " + minID);
-                mLastX = event.getX(event.findPointerIndex(minID));
-                mLastY = event.getY(event.findPointerIndex(minID));
+//                Log.e(TAG, "MotionEvent.ACTION_POINTER_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex())+" " + minID);
+//                mLastX = event.getX(event.findPointerIndex(minID));
+//                mLastY = event.getY(event.findPointerIndex(minID));
                 mFocusX = inX / event.getPointerCount();
                 mFocusY = inY / event.getPointerCount();
 
                 break;
             case MotionEvent.ACTION_MOVE:
                 invalidate();
-                Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+//                Log.e(TAG, "MotionEvent.ACTION_MOVE:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 // 当处于缩放模式时（多手指），由于未调用平移来更新lastX，lastY记录，所以当退出缩放模式开始平移时（多手指变单手指），会出现跳动问题。
                 if (mScaleDetector.isInProgress()) {
                     mLastX = event.getX(0);
@@ -177,7 +210,7 @@ public class ZoomImageView extends ImageView {
                 // not break but continue to ACTION_UP.
 
             case MotionEvent.ACTION_UP:
-                Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
+//                Log.e(TAG, "MotionEvent.ACTION_UP:" + event.getActionIndex() + " " + event.getPointerId(event.getActionIndex()));
                 float curScale = getCurrentScale();
                 if (curScale > SCALE_MAX) {
                     autoScale(curScale, SCALE_MAX, mFocusX, mFocusY);
@@ -197,6 +230,18 @@ public class ZoomImageView extends ImageView {
         // mScaleDetector需要接收完整的手势事件DOWN/MOVE/UP，否则流程异常。
         mScaleDetector.onTouchEvent(event);
         return true;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void printMotion(MotionEvent event) {
+        StringBuffer sb = new StringBuffer();
+        sb.append(event.getActionIndex()+"#"+event.getPointerId(event.getActionIndex())+": ");
+        sb.append("[ ");
+        for (int i = 0; i < event.getPointerCount(); i++) {
+            sb.append(event.findPointerIndex(event.getPointerId(i))+"#"+event.getPointerId(i)+" ");
+        }
+        sb.append("]");
+        Log.e(event.actionToString(event.getActionMasked()),sb.toString());
     }
 
     private ScaleGestureDetector.SimpleOnScaleGestureListener mScaleListener = new ScaleGestureDetector.SimpleOnScaleGestureListener() {
