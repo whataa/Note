@@ -11,33 +11,32 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Summer on 2016/11/13.
+ * Created by linjiang on 2016/11/13.
  */
-
 public class FragmentMaster {
+
+    public static final String KEY = "fragment_master_key";
+    public static final String VALUE = "fragment_master_value_is_";
 
     private int containerViewId;
     private FragmentManager manager;
-    private HashMap<String, Bundle> installClasses = new HashMap<>();
+    private HashMap<Integer, InstalledInfo> installClasses = new HashMap<>();
 
     private FragmentMaster() {
 
     }
 
-    public void showOrload(Class<? extends Fragment> fClass) {
-        showOrload(fClass, 0);
-    }
-
-    public void showOrload(Class<? extends Fragment> fClass, int position) {
-        String tag = tagOfCache(fClass, position);
+    public void showOrload(int label) {
+        InstalledInfo info = installClasses.get(label);
+        if (info == null) {
+            throw new RuntimeException("didn't find fragment in " + label + ", was it deployed in Builder?");
+        }
+        String tag = tagOfCache(info);
         Fragment fragment = manager.findFragmentByTag(tag);
         if (fragment == null) {
             try {
-                fragment = fClass.newInstance();
-                Bundle bundle = installClasses.get(tag);
-                if (bundle == null) {
-                    throw new RuntimeException(fClass + " should pre-install in Builder#build.");
-                }
+                fragment = info.fClass.newInstance();
+                Bundle bundle = info.bundle;
                 fragment.setArguments(bundle);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -51,6 +50,7 @@ public class FragmentMaster {
         List<Fragment> fragments = manager.getFragments();
         if (fragments != null && !fragments.isEmpty()) {
             for (Fragment item : fragments) {
+                if (item == null) continue;
                 if (item == fragment && item.isHidden()) {
                     if (item.isHidden()) {
                         transaction.show(item);
@@ -63,22 +63,21 @@ public class FragmentMaster {
         }
         if (!transaction.isEmpty()) {
             transaction.commit();
-//            manager.executePendingTransactions();
         }
     }
 
-    public FragmentMaster loadAll() {
+    public FragmentMaster loadAllFragments() {
         if (!installClasses.isEmpty()) {
-            Iterator<Map.Entry<String, Bundle>> iterator = installClasses.entrySet().iterator();
+            Iterator<Map.Entry<Integer, InstalledInfo>> iterator = installClasses.entrySet().iterator();
             FragmentTransaction transaction = manager.beginTransaction();
             while (iterator.hasNext()) {
-                Map.Entry<String, Bundle> entry = iterator.next();
-                String tag = entry.getKey();
+                Map.Entry<Integer, InstalledInfo> entry = iterator.next();
+                String tag = tagOfCache(entry.getValue());
                 Fragment fragment = manager.findFragmentByTag(tag);
                 if (fragment == null) {
                     try {
-                        fragment = (Fragment) Class.forName(parseClassFromtag(tag)).newInstance();
-                        fragment.setArguments(entry.getValue());
+                        fragment = entry.getValue().fClass.newInstance();
+                        fragment.setArguments(entry.getValue().bundle);
                         transaction.add(containerViewId, fragment, tag);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -91,10 +90,26 @@ public class FragmentMaster {
             }
             if (!transaction.isEmpty()) {
                 transaction.commit();
-//                manager.executePendingTransactions();
             }
         }
         return this;
+    }
+
+    public void clearAllFragments() {
+        List<Fragment> fragments = manager.getFragments();
+        if (fragments != null && !fragments.isEmpty()) {
+            FragmentTransaction transaction = manager.beginTransaction();
+            for (Fragment fragment : fragments) {
+                if (fragment == null) continue;
+                if (fragment.getArguments() != null &&
+                        (VALUE + containerViewId).equals(fragment.getArguments().getString(KEY))) {
+                    transaction.remove(fragment);
+                }
+            }
+            if (!transaction.isEmpty()) {
+                transaction.commit();
+            }
+        }
     }
 
     static class Builder {
@@ -114,18 +129,20 @@ public class FragmentMaster {
             return this;
         }
 
-        public Builder install(Class<? extends Fragment> fClass, Bundle bundle, int position) {
-            master.installClasses.put(master.tagOfCache(fClass, position), bundle);
+        public Builder config(Class<? extends Fragment> fClass, int label, Bundle bundle) {
+            if (master.containerViewId == 0 || master.manager == null) {
+                throw new RuntimeException("method containerViewId() and fragmentManager() must be called.");
+            }
+            if (bundle == null) {
+                bundle = new Bundle();
+            }
+            bundle.putString(KEY, VALUE + master.containerViewId);
+            master.installClasses.put(label, new InstalledInfo(fClass, label, bundle));
             return this;
         }
 
-        public Builder install(Class<? extends Fragment> fClass, Bundle bundle) {
-            install(fClass, bundle, 0);
-            return this;
-        }
-
-        public Builder install(Class<? extends Fragment> fClass) {
-            install(fClass, new Bundle());
+        public Builder config(Class<? extends Fragment> fClass, int label) {
+            config(fClass, label, null);
             return this;
         }
 
@@ -134,14 +151,20 @@ public class FragmentMaster {
         }
     }
 
-    private String tagOfCache(Class<? extends Fragment> fClass, int position) {
-        return "[" + fClass.getName() + "-" + position + "]" + " is cached in " + containerViewId;
+
+    private String tagOfCache(InstalledInfo info) {
+        return "[" + info.fClass.getName() + "-" + info.label + "]" + " is cached in " + containerViewId;
     }
 
-    private String parseClassFromtag(String tag) {
-        String str1 = tag.substring(tag.indexOf("[") + 1, tag.indexOf("]"));
-        String result = str1.split("-")[0];
-        return result;
-    }
+    static class InstalledInfo {
+        Class<? extends Fragment> fClass;
+        int label;
+        Bundle bundle;
 
+        public InstalledInfo(Class<? extends Fragment> fClass, int label, Bundle bundle) {
+            this.fClass = fClass;
+            this.label = label;
+            this.bundle = bundle;
+        }
+    }
 }
