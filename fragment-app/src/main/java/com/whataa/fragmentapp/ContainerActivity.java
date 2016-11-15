@@ -23,6 +23,9 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
 
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.main_button_group);
         radioGroup.setOnCheckedChangeListener(this);
+
+        AdjustRadioBar bar = (AdjustRadioBar) findViewById(R.id.main_bar);
+        bar.adjust(new String[]{"tab1", "tab2", "tab3", "tab4"});
     }
 
 
