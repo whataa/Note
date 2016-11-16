@@ -2,10 +2,12 @@ package com.whataa.fragmentapp;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.RadioGroup;
 
-public class ContainerActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
+public class ContainerActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener, AdjustRadioBar.OnRadioCheckedListener {
 
+    private static final String TAG = ContainerActivity.class.getSimpleName();
     FragmentMaster master;
 
     @Override
@@ -25,6 +27,7 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
         radioGroup.setOnCheckedChangeListener(this);
 
         AdjustRadioBar bar = (AdjustRadioBar) findViewById(R.id.main_bar);
+        bar.setOnRadioCheckedListener(this);
         bar.adjust(new String[]{"tab1", "tab2", "tab3", "tab4"});
     }
 
@@ -39,6 +42,22 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
                 master.showOrload(1);
                 break;
             case R.id.main_button_2:
+                master.showOrload(2);
+                break;
+        }
+    }
+
+    @Override
+    public void onRadioCheck(int position, String name) {
+        Log.d(TAG, position + " " + name);
+        switch (position) {
+            case 0:
+                master.showOrload(0);
+                break;
+            case 1:
+                master.showOrload(1);
+                break;
+            case 2:
                 master.showOrload(2);
                 break;
         }
