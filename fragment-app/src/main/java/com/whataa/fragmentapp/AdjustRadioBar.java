@@ -1,6 +1,8 @@
 package com.whataa.fragmentapp;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -33,13 +35,12 @@ public class AdjustRadioBar extends RadioGroup {
         removeAllViews();
         for (String name : names) {
             RadioButton radioButton = new RadioButton(getContext());
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT);
-            params.weight = 1;
-            radioButton.setButtonDrawable(null);
+            LayoutParams params = new LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+            radioButton.setButtonDrawable(new ColorDrawable(Color.TRANSPARENT));
             radioButton.setText(name);
             radioButton.setGravity(Gravity.CENTER);
             radioButton.setTextSize(16);
-            radioButton.setTextColor(getContext().getResources().getColor(R.color.state_check_txt));
+            radioButton.setTextColor(getContext().getResources().getColorStateList(R.color.state_check_txt));
             radioButton.setBackgroundResource(R.drawable.selector_bg_radio);
             addView(radioButton, params);
         }

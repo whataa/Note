@@ -51,13 +51,16 @@ public class FragmentMaster {
         if (fragments != null && !fragments.isEmpty()) {
             for (Fragment item : fragments) {
                 if (item == null) continue;
-                if (item == fragment && item.isHidden()) {
-                    if (item.isHidden()) {
-                        transaction.show(item);
+                Bundle arguments = item.getArguments();
+                if (arguments != null && (VALUE + containerViewId).equals(arguments.get(KEY))) {
+                    if (item == fragment && item.isHidden()) {
+                        if (item.isHidden()) {
+                            transaction.show(item);
+                        }
                     }
-                }
-                if (item != fragment && !item.isHidden()) {
-                    transaction.hide(item);
+                    if (item != fragment && !item.isHidden()) {
+                        transaction.hide(item);
+                    }
                 }
             }
         }
@@ -101,8 +104,8 @@ public class FragmentMaster {
             FragmentTransaction transaction = manager.beginTransaction();
             for (Fragment fragment : fragments) {
                 if (fragment == null) continue;
-                if (fragment.getArguments() != null &&
-                        (VALUE + containerViewId).equals(fragment.getArguments().getString(KEY))) {
+                Bundle arguments = fragment.getArguments();
+                if (arguments != null && (VALUE + containerViewId).equals(arguments.get(KEY))) {
                     transaction.remove(fragment);
                 }
             }
@@ -136,6 +139,7 @@ public class FragmentMaster {
             if (bundle == null) {
                 bundle = new Bundle();
             }
+            // make sure that we can separate whether the fragment contained in containerViewId.
             bundle.putString(KEY, VALUE + master.containerViewId);
             master.installClasses.put(label, new InstalledInfo(fClass, label, bundle));
             return this;
