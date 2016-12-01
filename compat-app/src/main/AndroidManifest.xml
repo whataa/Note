@@ -20,6 +20,8 @@
             android:name="io.github.whataa.picer.PicerActivity"
             android:theme="@style/PicerTheme" />
         <activity android:name=".ConsortActivity" />
+        <activity android:name=".TestMeasureActivity" />
+        <activity android:name=".PinAncherActivity" />
     </application>
 
 </manifest>
