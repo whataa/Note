@@ -1,11 +1,12 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.2"
 
     defaultConfig {
-        applicationId "com.example.alarm_app"
+        applicationId "io.github.whataa.alarm"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 1

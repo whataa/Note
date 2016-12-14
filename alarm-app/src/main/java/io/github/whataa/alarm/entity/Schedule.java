@@ -1,6 +1,11 @@
-package com.example.alarm_app;
+package io.github.whataa.alarm.entity;
 
-public class Alarm {
+import java.io.Serializable;
+
+/**
+ * 一个计划
+ */
+public class Schedule implements Serializable {
     public int id;
     // 提示时间
     public long hintTime;
@@ -20,4 +25,11 @@ public class Alarm {
     public boolean sound;
     // 提示音文件路径，null则使用系统默认；
     public String soundPath;
+
+    public Schedule(int id, long hintTime, String name, String description) {
+        this.id = id;
+        this.hintTime = hintTime;
+        this.name = name;
+        this.description = description;
+    }
 }
