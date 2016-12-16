@@ -11,6 +11,9 @@ android {
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
+        ndk {
+            abiFilter 'armeabi-v7a'
+        }
     }
     buildTypes {
         release {
@@ -18,6 +21,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 dependencies {

@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        recyclerView.setLayoutManager(new CardLayoutManager());
         recyclerView.setAdapter(adapter = new RecyclerView.Adapter<VHolder>() {
 
             @Override
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
     class VHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvDesc, tvTime;
 
-        public VHolder(View itemView) {
+        VHolder(View itemView) {
             super(itemView);
             tvName = (TextView) itemView.findViewById(R.id.alarm_name);
             tvDesc = (TextView) itemView.findViewById(R.id.alarm_desc);

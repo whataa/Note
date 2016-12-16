@@ -6,12 +6,13 @@
     android:clickable="true"
     android:foreground="?attr/selectableItemBackground"
     android:orientation="vertical"
-    app:cardElevation="8dp"
-    app:cardCornerRadius="8dp"
+    app:cardElevation="6dp"
+    app:cardCornerRadius="4dp"
     app:cardPreventCornerOverlap="false"
     app:cardUseCompatPadding="true">
 
     <LinearLayout
+        android:minHeight="200dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
