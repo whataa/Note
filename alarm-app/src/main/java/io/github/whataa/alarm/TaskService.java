@@ -15,7 +15,10 @@ import android.util.Log;
 
 import java.util.Random;
 
+import io.github.whataa.alarm.entity.Schedule;
 import io.github.whataa.alarm.entity.Task;
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 /**
  * - 第一次启动时，读取数据库，设置闹钟；
@@ -51,7 +54,10 @@ public class TaskService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.w(TAG, "onStartCommand: " + intent);
-        Task task = (Task) intent.getSerializableExtra("DATA");
+        Realm realm = Realm.getDefaultInstance();
+        RealmResults<Schedule> results = realm.where(Schedule.class).equalTo("id", intent.getIntExtra("DATA", 0)).findAll();
+        Schedule schedule = realm.copyFromRealm(results.first());
+        Task task = new Task(schedule, schedule.actions);
         dispatchSubmit(task);
         return START_NOT_STICKY;
     }
@@ -107,8 +113,8 @@ public class TaskService extends Service {
                 case 1:
                     Task task = (Task) msg.obj;
                     sendNotificationMessage(task.toString());
-                    if (task.nextActionId < task.actions.size()) {
-                        long delayed = task.actions.get(task.nextActionId++).duration;
+                    if (task.nextActionOrder < task.actions.size()) {
+                        long delayed = task.actions.get(task.nextActionOrder++).duration;
                         sendMessageDelayed(obtainMessage(1, msg.obj), delayed);
                     }
                     break;

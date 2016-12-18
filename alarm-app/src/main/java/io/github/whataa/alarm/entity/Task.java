@@ -11,7 +11,7 @@ public class Task implements Serializable {
     /**
      * 下一个即将执行的动作，可手动指定
      */
-    public int nextActionId;
+    public int nextActionOrder;
     public Schedule schedule;
     public List<Action> actions;
 

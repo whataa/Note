@@ -9,7 +9,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-
+        <EditText
+            android:id="@+id/edit_theme"
+            android:hint="伟大计划的主题……"
+            android:lines="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/edit_desc"
+            android:hint="计划备注"
+            android:lines="1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

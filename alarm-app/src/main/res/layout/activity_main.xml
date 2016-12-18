@@ -6,7 +6,12 @@
 
     <Button
         android:onClick="onAddTaskClick"
-        android:text="添加任务"
+        android:text="+"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <Button
+        android:onClick="onDelTaskClick"
+        android:text="-"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <android.support.v7.widget.RecyclerView

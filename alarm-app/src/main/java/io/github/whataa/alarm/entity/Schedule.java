@@ -2,10 +2,15 @@ package io.github.whataa.alarm.entity;
 
 import java.io.Serializable;
 
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+
 /**
  * 一个计划
  */
-public class Schedule implements Serializable {
+public class Schedule extends RealmObject implements Serializable {
+    @PrimaryKey
     public int id;
     // 提示时间
     public long hintTime;
@@ -14,7 +19,7 @@ public class Schedule implements Serializable {
     // 是否重复
     public boolean isRepeat;
     // 重复模式：周1~周日，true表示需要提醒，否则false
-    public boolean[] repeatMode = new boolean[7];
+    public RepeatMode repeatMode;
     // 提醒主题
     public String name;
     // 提醒描述
@@ -25,6 +30,12 @@ public class Schedule implements Serializable {
     public boolean sound;
     // 提示音文件路径，null则使用系统默认；
     public String soundPath;
+
+    public RealmList<Action> actions;
+
+    public Schedule() {
+
+    }
 
     public Schedule(int id, long hintTime, String name, String description) {
         this.id = id;

@@ -3,29 +3,27 @@ package io.github.whataa.alarm;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
+import io.github.whataa.alarm.common.BaseRealmActivity;
 import io.github.whataa.alarm.entity.Action;
 import io.github.whataa.alarm.entity.Schedule;
-import io.github.whataa.alarm.entity.Task;
+import io.realm.Realm;
+import io.realm.RealmList;
 
 
 /**
  * Created by Administrator on 2016/12/14.
  */
 
-public class TaskModifyActivity extends AppCompatActivity {
+public class TaskModifyActivity extends BaseRealmActivity {
     private static final String TAG = TaskModifyActivity.class.getSimpleName();
 
     LinearLayout actionGroup;
@@ -38,17 +36,26 @@ public class TaskModifyActivity extends AppCompatActivity {
 
     public void onSubTaskClick(View view) {
         Log.w(TAG, "onSubTaskClick: ");
-        List<Action> actions = new ArrayList<>();
         int scheduleId = new Random().nextInt();
-        Schedule schedule = new Schedule(scheduleId, System.currentTimeMillis(), "计划"+scheduleId, "这是描述内容"+scheduleId);
+        String title = ((EditText)findViewById(R.id.edit_theme)).getText().toString();
+        String desc = ((EditText)findViewById(R.id.edit_desc)).getText().toString();
+        final Schedule schedule = new Schedule(scheduleId, System.currentTimeMillis(),
+                !"".equals(title)?title : "计划"+scheduleId, !"".equals(desc)?desc : "a great schedule.");
+        schedule.actions = new RealmList<>();
         for (int i = 0; i < actionGroup.getChildCount(); i++) {
             EditText editText = (EditText) actionGroup.getChildAt(i);
             String time = editText.getText().toString();
             if (time.equals("")) continue;
-            actions.add(new Action(schedule.id, i, Long.parseLong(time), "action comes"+i));
+            schedule.actions.add(new Action(new Random().nextInt(), schedule.id, i, Long.parseLong(time), "action comes"+i));
         }
-        Task task = new Task(schedule, actions);
-        setResult(RESULT_OK, new Intent().putExtra("DATA", task));
+        getDefaultRealm().executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                realm.copyToRealm(schedule);
+            }
+        });
+
+        setResult(RESULT_OK, new Intent().putExtra("DATA", schedule.id));
         finish();
     }
 
