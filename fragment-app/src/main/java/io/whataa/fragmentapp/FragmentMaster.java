@@ -1,4 +1,4 @@
-package com.whataa.fragmentapp;
+package io.whataa.fragmentapp;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -26,7 +26,7 @@ public class FragmentMaster {
 
     }
 
-    public void showOrload(int label) {
+    public void showOrLoad(int label) {
         InstalledInfo info = installClasses.get(label);
         if (info == null) {
             throw new RuntimeException("didn't find fragment in " + label + ", was it deployed in Builder?");
@@ -36,6 +36,7 @@ public class FragmentMaster {
         if (fragment == null) {
             try {
                 fragment = info.fClass.newInstance();
+                fragment.setUserVisibleHint(false);
                 Bundle bundle = info.bundle;
                 fragment.setArguments(bundle);
             } catch (Exception e) {

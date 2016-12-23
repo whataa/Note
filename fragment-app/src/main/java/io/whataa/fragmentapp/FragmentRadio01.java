@@ -1,4 +1,4 @@
-package com.whataa.fragmentapp;
+package io.whataa.fragmentapp;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.whataa.fragmentapp.R;
 
 /**
  * Created by Summer on 2016/11/13.

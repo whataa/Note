@@ -1,4 +1,4 @@
-package com.whataa.fragmentapp;
+package io.whataa.fragmentapp;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -6,9 +6,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+
+import com.whataa.fragmentapp.R;
 
 /**
  * Created by Summer on 2016/11/15.
