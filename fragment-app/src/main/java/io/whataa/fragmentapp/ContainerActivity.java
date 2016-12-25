@@ -1,5 +1,6 @@
 package io.whataa.fragmentapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,8 @@ import android.util.Log;
 import android.widget.RadioGroup;
 
 import com.whataa.fragmentapp.R;
+
+import io.whataa.fragmentapp.pagedemo.PageDemoActivity;
 
 public class ContainerActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
 
@@ -90,7 +93,8 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
                 master.showOrLoad(1);
                 break;
             case R.id.main_button_2:
-                master.showOrLoad(2);
+//                master.showOrLoad(2);
+                startActivity(new Intent(this, PageDemoActivity.class));
                 break;
         }
     }
