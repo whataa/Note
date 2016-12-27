@@ -53,9 +53,10 @@ public class PageDemoActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
         viewPager = (ViewPager) findViewById(R.id.act_pagedemo_vp);
         viewPager.setAdapter(adapter = new PageDemoAdapter(getSupportFragmentManager()));
     }
+
 }

@@ -3,6 +3,7 @@ package io.whataa.fragmentapp;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.RadioGroup;
@@ -22,13 +23,14 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_container);
 
+        FragmentManager.enableDebugLogging(true);
         master = new FragmentMaster.Builder()
                 .containerViewId(R.id.main_container)
                 .fragmentManager(getSupportFragmentManager())
                 .config(FragmentRadio01.class, 0, new BundleBuilder().putString("DATA", "page1").build())
                 .config(FragmentRadio01.class, 1, new BundleBuilder().putString("DATA", "page2").build())
                 .config(FragmentRadio01.class, 2, new BundleBuilder().putString("DATA", "page3").build())
-                .build();
+                .build().loadAllFragments();
 
         RadioGroup radioGroup = (RadioGroup) findViewById(R.id.main_button_group);
         radioGroup.setOnCheckedChangeListener(this);

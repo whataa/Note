@@ -36,7 +36,6 @@ public class FragmentMaster {
         if (fragment == null) {
             try {
                 fragment = info.fClass.newInstance();
-                fragment.setUserVisibleHint(false);
                 Bundle bundle = info.bundle;
                 fragment.setArguments(bundle);
             } catch (Exception e) {
@@ -81,6 +80,11 @@ public class FragmentMaster {
                 if (fragment == null) {
                     try {
                         fragment = entry.getValue().fClass.newInstance();
+                        if (entry.getValue().label == 0) {
+                            fragment.setUserVisibleHint(true);
+                        } else {
+                            fragment.setUserVisibleHint(false);
+                        }
                         fragment.setArguments(entry.getValue().bundle);
                         transaction.add(containerViewId, fragment, tag);
                     } catch (Exception e) {
