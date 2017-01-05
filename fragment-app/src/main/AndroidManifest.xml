@@ -17,6 +17,7 @@
         </activity>
 
         <activity android:name="io.whataa.fragmentapp.pagedemo.PageDemoActivity"/>
+        <activity android:name="io.whataa.fragmentapp.backstackdemo.StackActivity" />
     </application>
 
 </manifest>
