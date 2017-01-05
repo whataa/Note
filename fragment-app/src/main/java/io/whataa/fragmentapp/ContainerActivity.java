@@ -10,6 +10,7 @@ import android.widget.RadioGroup;
 
 import com.whataa.fragmentapp.R;
 
+import io.whataa.fragmentapp.backstackdemo.StackActivity;
 import io.whataa.fragmentapp.pagedemo.PageDemoActivity;
 
 public class ContainerActivity extends AppCompatActivity implements RadioGroup.OnCheckedChangeListener {
@@ -23,7 +24,7 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_container);
 
-        FragmentManager.enableDebugLogging(true);
+//        FragmentManager.enableDebugLogging(true);
         master = new FragmentMaster.Builder()
                 .containerViewId(R.id.main_container)
                 .fragmentManager(getSupportFragmentManager())
@@ -92,7 +93,8 @@ public class ContainerActivity extends AppCompatActivity implements RadioGroup.O
                 master.showOrLoad(0);
                 break;
             case R.id.main_button_1:
-                master.showOrLoad(1);
+//                master.showOrLoad(1);
+                startActivity(new Intent(this, StackActivity.class));
                 break;
             case R.id.main_button_2:
 //                master.showOrLoad(2);

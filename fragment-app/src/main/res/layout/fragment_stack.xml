@@ -18,6 +18,7 @@
         android:id="@+id/fragment_stack_back" />
 
     <TextView
+        android:gravity="center_vertical"
         android:text="TextView"
         android:layout_width="match_parent"
         android:layout_height="50dp"
