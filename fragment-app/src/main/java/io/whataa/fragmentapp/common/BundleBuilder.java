@@ -1,4 +1,4 @@
-package io.whataa.fragmentapp;
+package io.whataa.fragmentapp.common;
 
 import android.annotation.TargetApi;
 import android.os.Build;

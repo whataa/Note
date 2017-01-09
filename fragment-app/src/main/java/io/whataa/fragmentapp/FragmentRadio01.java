@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.whataa.fragmentapp.R;
 
+import io.whataa.fragmentapp.common.BaseFragment;
+
 /**
  * Created by Summer on 2016/11/13.
  */

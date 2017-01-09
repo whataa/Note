@@ -11,7 +11,7 @@ import com.whataa.fragmentapp.R;
 
 import java.text.MessageFormat;
 
-import io.whataa.fragmentapp.BaseFragment;
+import io.whataa.fragmentapp.common.BaseFragment;
 
 /**
  * Created by Summer on 2016/12/25.

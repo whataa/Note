@@ -3,6 +3,7 @@ package io.whataa.fragmentapp.backstackdemo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,7 +16,7 @@ import com.whataa.fragmentapp.R;
 
 import java.util.List;
 
-import io.whataa.fragmentapp.BaseFragment;
+import io.whataa.fragmentapp.common.BaseFragment;
 
 /**
  * Created by Administrator on 2017/1/5.
@@ -72,14 +73,14 @@ public class BaseStackFragment extends BaseFragment {
                     }
                     if (!toF.isAdded()) {
                         Log.e(TAG, "toF is not added, so do it");
-                        transaction.replace(R.id.act_stack_container, toF, to.getName());
+                        transaction.add(R.id.act_stack_container, toF, to.getName());
                     }
                     if (toF.isHidden()) {
                         Log.e(TAG, "toF is not showing, so do it");
                         transaction.show(toF);
                     }
                     transaction
-                            .addToBackStack(from.getSimpleName() + " to " + to.getSimpleName())
+                            .addToBackStack(makeBackStackName(from, to))
                             .commit();
                 } catch (java.lang.InstantiationException e) {
                     e.printStackTrace();
@@ -92,10 +93,15 @@ public class BaseStackFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 getActivity().getSupportFragmentManager().popBackStack(
-                        Stack01Fragment.class.getSimpleName() + " to " + Stack02Fragment.class.getSimpleName(), 0);
+                        makeBackStackName(Stack02Fragment.class, Stack03Fragment.class), FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
         });
         TextView textView = (TextView) view.findViewById(R.id.textView);
         textView.setText(from.getSimpleName());
+    }
+
+    private static String makeBackStackName(Class from, Class to) {
+        return from.getSimpleName() + " to " + to.getSimpleName();
+//        return "makeBackStackName test name";
     }
 }

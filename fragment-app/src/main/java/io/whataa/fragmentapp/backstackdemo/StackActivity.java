@@ -20,7 +20,9 @@ import java.util.List;
 public class StackActivity extends AppCompatActivity {
 
     private static final String TAG = StackActivity.class.getName();
-
+    {
+//        FragmentManager.enableDebugLogging(true);
+    }
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,4 +1,4 @@
-package io.whataa.fragmentapp;
+package io.whataa.fragmentapp.common;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -120,7 +120,7 @@ public class FragmentMaster {
         }
     }
 
-    static class Builder {
+    public static class Builder {
         FragmentMaster master;
 
         public Builder() {

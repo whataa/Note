@@ -5,6 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <fragment
+        android:id="@+id/main_static_container"
+        android:name="io.whataa.fragmentapp.StaticLoadFragment"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"/>
     <FrameLayout
         android:layout_weight="1"
         android:id="@+id/main_container"
@@ -37,4 +42,35 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
     </RadioGroup>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:lines="1"
+            android:text="backStack"
+            android:onClick="mainBtn1Click"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:lines="1"
+            android:text="pager"
+            android:onClick="mainBtn2Click"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:lines="1"
+            android:onClick="mainBtn3Click"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:lines="1"
+            android:onClick="mainBtn4Click"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 </LinearLayout>
