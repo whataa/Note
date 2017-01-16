@@ -15,6 +15,6 @@ public class Stack01Fragment extends BaseStackFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        initView(view, Stack01Fragment.class, Stack02Fragment.class);
+        initView(view, Stack02Fragment.class);
     }
 }
