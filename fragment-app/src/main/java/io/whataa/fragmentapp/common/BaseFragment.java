@@ -24,7 +24,9 @@ public class BaseFragment extends Fragment {
 
 
     public final String TAG = getClass().getSimpleName();
-
+    protected final String getTAG() {
+        return TAG;
+    }
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

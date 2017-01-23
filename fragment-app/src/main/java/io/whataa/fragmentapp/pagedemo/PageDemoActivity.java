@@ -1,20 +1,23 @@
 package io.whataa.fragmentapp.pagedemo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.whataa.fragmentapp.R;
+
+import io.whataa.fragmentapp.common.BaseActivity;
+import io.whataa.fragmentapp.menudemo.MenuActivity;
 
 /**
  * Created by Summer on 2016/12/25.
  */
 
-public class PageDemoActivity extends AppCompatActivity {
+public class PageDemoActivity extends BaseActivity {
     PageDemoAdapter adapter;
     ViewPager viewPager;
     BottomNavigationView bottomNavigationView;
@@ -43,6 +46,7 @@ public class PageDemoActivity extends AppCompatActivity {
                     case R.id.action_four:
                         // Switch to page three
                         viewPager.setCurrentItem(3);
+                        startActivity(new Intent(PageDemoActivity.this, MenuActivity.class));
                         break;
                 }
                 return true;

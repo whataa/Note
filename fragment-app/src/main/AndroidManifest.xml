@@ -8,7 +8,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="io.whataa.fragmentapp.ContainerActivity">
+        <activity
+            android:name="io.whataa.fragmentapp.ContainerActivity">
+            <!--android:launchMode="singleTop"-->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -16,8 +18,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="io.whataa.fragmentapp.pagedemo.PageDemoActivity"/>
+        <activity android:name="io.whataa.fragmentapp.pagedemo.PageDemoActivity" />
         <activity android:name="io.whataa.fragmentapp.backstackdemo.StackActivity" />
+        <activity
+            android:name="io.whataa.fragmentapp.menudemo.MenuActivity"
+            android:parentActivityName="io.whataa.fragmentapp.ContainerActivity"
+            android:theme="@style/ActivityTheme">
+            <!-- Parent activity meta-data to support 4.0 and lower -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="io.whataa.fragmentapp.ContainerActivity" />
+        </activity>
     </application>
 
 </manifest>

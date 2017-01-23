@@ -11,6 +11,7 @@ import io.whataa.fragmentapp.backstackdemo.StackActivity;
 import io.whataa.fragmentapp.common.BaseActivity;
 import io.whataa.fragmentapp.common.BundleBuilder;
 import io.whataa.fragmentapp.common.FragmentMaster;
+import io.whataa.fragmentapp.menudemo.MenuActivity;
 import io.whataa.fragmentapp.pagedemo.PageDemoActivity;
 
 public class ContainerActivity extends BaseActivity implements RadioGroup.OnCheckedChangeListener {
@@ -65,6 +66,7 @@ public class ContainerActivity extends BaseActivity implements RadioGroup.OnChec
     }
 
     public void mainBtn3Click(View view) {
+        startActivity(new Intent(this, MenuActivity.class));
     }
 
     public void mainBtn4Click(View view) {

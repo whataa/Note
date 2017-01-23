@@ -14,6 +14,10 @@ public class BaseActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
 
+    protected final String getTAG() {
+        return TAG;
+    }
+
     protected final void logMethord(boolean isStart) {
         Log.d(TAG, "【" + Thread.currentThread().getStackTrace()[3].getMethodName() + (isStart ? "】-------->>>>start>>>>" : "--------<<<<end<<<<"));
     }
