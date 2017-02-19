@@ -2,6 +2,7 @@ package io.whataa.fragmentapp.menudemo;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -48,13 +49,25 @@ public class MenuFragment extends BaseFragment {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Toast.makeText(getActivity(), "onOptionsItemSelected option click:" + item, Toast.LENGTH_SHORT).show();
-        if (item.getItemId() == R.id.action_two) {
+        Toast.makeText(getActivity(), "fragment option click:" + item, Toast.LENGTH_SHORT).show();
+        if (item.getItemId() == R.id.action_one) {
             setHasOptionsMenu(false);
-        } else if (item.getItemId() == R.id.action_one) {
+        } else if (item.getItemId() == R.id.action_two) {
             setMenuVisibility(false);
+        } else if (item.getItemId() == R.id.action_three) {
+            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+            if (isHidden()) {
+                transaction.show(this);
+            } else {
+                transaction.hide(this);
+            }
+            transaction.commitNowAllowingStateLoss();
         }
         return true;
     }
 
+    @Override
+    public void onDestroyOptionsMenu() {
+        Log.d(getTAG(), "onDestroyOptionsMenu()");
+    }
 }

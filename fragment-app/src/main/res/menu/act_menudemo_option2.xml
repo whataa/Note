@@ -7,4 +7,7 @@
     <item
         android:id="@+id/action_two"
         android:title="Two"/>
+    <item
+        android:id="@+id/action_three"
+        android:title="Hide/Show"/>
 </menu>

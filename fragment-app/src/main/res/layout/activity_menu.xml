@@ -13,7 +13,10 @@
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
+    <TextView
+        android:text="[0]. 当前Activity的optionMenu包括“搜索和one”，点击显示Toast；\n[1]. 点击Button可以根据Button的位置弹出合适的PopupMenu；\n[2]. 点击PopupMenu任意Item执行是同样的逻辑；\n[3]. 逻辑：如果未add Fragment，就replace，否则执行setHasOptionsMenu(true)显示Fragment的optionMenu；\n[4]. Fragment的optionMenu包含“one、Two、Three”，one执行setHasOptionsMenu(false)，two执行setMenuVisibility(false)，three执行hide/show当前Fragment；"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
     <Button
         android:id="@+id/button"
         android:layout_width="match_parent"

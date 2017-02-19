@@ -59,7 +59,7 @@ public class MenuActivity extends BaseActivity {
         popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Toast.makeText(MenuActivity.this, "click:" + item, Toast.LENGTH_SHORT).show();
+                Toast.makeText(MenuActivity.this, "popMenu click:" + item, Toast.LENGTH_SHORT).show();
                 if (getSupportFragmentManager().getBackStackEntryCount() != 0) {
                     getSupportFragmentManager().getFragments().get(0).setHasOptionsMenu(true);
                     return true;
@@ -138,7 +138,7 @@ public class MenuActivity extends BaseActivity {
             default:
                 return backValue;
         }
-        Toast.makeText(MenuActivity.this, "option click:" + item, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MenuActivity.this, "activity option click:" + item, Toast.LENGTH_SHORT).show();
         return false;
     }
 }
