@@ -5,13 +5,11 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.whataa.fragmentapp"
+        applicationId "com.example.view_app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
-
-
     }
     buildTypes {
         release {
@@ -22,7 +20,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:' + rootProject.ext.supportLibraryVersion
-    compile 'com.android.support:design:' + rootProject.ext.supportLibraryVersion
 }
