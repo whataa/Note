@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.view_app"
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion 18 // for testing clip-bound, >=18
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"

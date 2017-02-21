@@ -10,6 +10,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".layoutmode.LayoutModeActivity" />
+        <activity android:name=".testmeasure.MeasureActivity" />
     </application>
 
 </manifest>
