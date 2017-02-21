@@ -3,26 +3,26 @@ package com.example.view_app.testmeasure;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.FrameLayout;
+import android.widget.ScrollView;
 
 import static com.example.view_app.testmeasure.Util.getSpecName;
 
 /**
- * Created by Administrator on 2017/2/13.
+ * Created by Administrator on 2017/2/21.
  */
 
-public class MyFrameLayout extends FrameLayout {
-    private static final String TAG = MyFrameLayout.class.getSimpleName();
+public class MyScrollView extends ScrollView {
+    private static final String TAG = MyScrollView.class.getSimpleName();
 
-    public MyFrameLayout(Context context) {
+    public MyScrollView(Context context) {
         super(context);
     }
 
-    public MyFrameLayout(Context context, AttributeSet attrs) {
+    public MyScrollView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public MyFrameLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+    public MyScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
 
@@ -32,6 +32,4 @@ public class MyFrameLayout extends FrameLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         Log.i(TAG, "onMeasureAfter: measurWidth{"+getMeasuredWidth()+"}  measureHeight{"+getMeasuredHeight()+"}");
     }
-
-
 }

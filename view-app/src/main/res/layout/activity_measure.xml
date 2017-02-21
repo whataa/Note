@@ -4,24 +4,36 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.example.view_app.testmeasure.MyFrameLayout
-        android:background="#b6b6b6"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+    <!--<com.example.view_app.testmeasure.MyFrameLayout-->
+        <!--android:background="#b6b6b6"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content">-->
+        <!--<com.example.view_app.testmeasure.MyTextView-->
+            <!--android:background="#7194b7"-->
+            <!--android:text="123456"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<Button-->
+            <!--android:text="09871111111"-->
+            <!--android:layout_marginTop="20dp"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content" />-->
+        <!--<Button-->
+            <!--android:text="123456"-->
+            <!--android:layout_marginTop="60dp"-->
+            <!--android:layout_width="100dp"-->
+            <!--android:layout_height="wrap_content" />-->
+    <!--</com.example.view_app.testmeasure.MyFrameLayout>-->
+    <com.example.view_app.testmeasure.MyScrollView
+        android:padding="16dp"
+        android:background="#aea99b"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <com.example.view_app.testmeasure.MyTextView
             android:background="#7194b7"
-            android:text="123456"
-            android:layout_width="match_parent"
+            android:text="this is textView in ScrollView, \nfor testing scrollView's mFillViewport."
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
-        <Button
-            android:text="09871111111"
-            android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <Button
-            android:text="123456"
-            android:layout_marginTop="60dp"
-            android:layout_width="100dp"
-            android:layout_height="wrap_content" />
-    </com.example.view_app.testmeasure.MyFrameLayout>
+
+    </com.example.view_app.testmeasure.MyScrollView>
 </LinearLayout>
