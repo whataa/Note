@@ -17,4 +17,10 @@
         android:text="measue test"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:onClick="btn3Click"
+        android:text="chart demo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 </LinearLayout>

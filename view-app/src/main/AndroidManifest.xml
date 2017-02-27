@@ -12,6 +12,7 @@
         </activity>
         <activity android:name=".layoutmode.LayoutModeActivity" />
         <activity android:name=".testmeasure.MeasureActivity" />
+        <activity android:name=".chart.ChartDemoActivity" />
     </application>
 
 </manifest>

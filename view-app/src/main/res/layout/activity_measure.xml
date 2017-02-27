@@ -1,39 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.view_app.testmeasure.MyLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
+    android:baselineAligned="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--<com.example.view_app.testmeasure.MyFrameLayout-->
-        <!--android:background="#b6b6b6"-->
+    <!--<TextView-->
+        <!--android:textColor="#180a0a"-->
+        <!--android:textSize="12sp"-->
+        <!--android:text="EE"-->
         <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content">-->
-        <!--<com.example.view_app.testmeasure.MyTextView-->
-            <!--android:background="#7194b7"-->
-            <!--android:text="123456"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content" />-->
-        <!--<Button-->
-            <!--android:text="09871111111"-->
-            <!--android:layout_marginTop="20dp"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content" />-->
-        <!--<Button-->
-            <!--android:text="123456"-->
-            <!--android:layout_marginTop="60dp"-->
-            <!--android:layout_width="100dp"-->
-            <!--android:layout_height="wrap_content" />-->
-    <!--</com.example.view_app.testmeasure.MyFrameLayout>-->
-    <com.example.view_app.testmeasure.MyScrollView
-        android:padding="16dp"
-        android:background="#aea99b"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        <!--android:layout_height="wrap_content" />-->
+    <!--<TextView-->
+        <!--android:textColor="#180a0a"-->
+        <!--android:textSize="14sp"-->
+        <!--android:text="EE"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content" />-->
+    <!--<TextView-->
+        <!--android:textColor="#180a0a"-->
+        <!--android:textSize="16sp"-->
+        <!--android:text="EE"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content" />-->
+    <!--<TextView-->
+        <!--android:textColor="#180a0a"-->
+        <!--android:textSize="18sp"-->
+        <!--android:text="EE"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_widthut_height="wrap_content" />-->
+
+    <com.example.view_app.testmeasure.MyFrameLayout
+        android:paddingLeft="20dp"
+        android:paddingRight="10dp"
+        android:background="#b6b6b6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
         <com.example.view_app.testmeasure.MyTextView
             android:background="#7194b7"
-            android:text="this is textView in ScrollView, \nfor testing scrollView's mFillViewport."
-            android:layout_width="wrap_content"
+            android:text="123456"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <Button
+            android:text="1111111111111111"
+            android:layout_marginTop="20dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="20dp"
+            android:layout_gravity="center_horizontal"
+            android:text="123456"
+            android:layout_marginTop="60dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:layout_gravity="center_horizontal"
+            android:text="123456"
+            android:layout_marginTop="100dp"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content" />
+        <Button
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="10dp"
+            android:text="1111111111111111"
+            android:layout_marginTop="140dp"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content" />
+    </com.example.view_app.testmeasure.MyFrameLayout>
 
-    </com.example.view_app.testmeasure.MyScrollView>
-</LinearLayout>
+    <!--<com.example.view_app.testmeasure.MyScrollView-->
+        <!--android:padding="16dp"-->
+        <!--android:background="#aea99b"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent">-->
+        <!--<com.example.view_app.testmeasure.MyTextView-->
+            <!--android:background="#7194b7"-->
+            <!--android:text="this is textView in ScrollView, \nfor testing scrollView's mFillViewport."-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content" />-->
+
+    <!--</com.example.view_app.testmeasure.MyScrollView>-->
+</com.example.view_app.testmeasure.MyLinearLayout>
