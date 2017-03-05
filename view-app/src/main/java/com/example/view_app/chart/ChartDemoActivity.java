@@ -18,8 +18,8 @@ public class ChartDemoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chartdemo);
     }
 
-    public void btnClick(View view) {
-        TestView testView = (TestView) findViewById(R.id.chartview);
-        testView.startAnima(5000);
-    }
+//    public void btnClick(View view) {
+//        TestView testView = (TestView) findViewById(R.id.chartview);
+//        testView.startAnima(5000);
+//    }
 }
