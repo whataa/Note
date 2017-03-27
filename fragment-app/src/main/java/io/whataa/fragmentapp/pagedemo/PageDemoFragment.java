@@ -2,7 +2,10 @@ package io.whataa.fragmentapp.pagedemo;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -33,6 +36,7 @@ public class PageDemoFragment extends BaseFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         curTab = getArguments().getInt("DATA");
+        setHasOptionsMenu(true);
     }
 
     @Nullable
@@ -47,7 +51,52 @@ public class PageDemoFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
         TextView textView = (TextView) view.findViewById(R.id.pagedemo_fragment_txt);
         textView.setText(MessageFormat.format("this is page {0}", curTab));
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (curTab == 2) {
+                    canTwoOwnMenu = !canTwoOwnMenu;
+                    setMenuVisibility(canTwoOwnMenu);
+                }
+            }
+        });
     }
 
+    private boolean canTwoOwnMenu;
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (curTab != 2) {
+            setMenuVisibility(isVisibleToUser);
+        } else {
+            setMenuVisibility(false);
+        }
+    }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        Log.d(getTAG(), "onCreateOptionsMenu: " + menu);
+        menu.clear();
+        switch (curTab) {
+            case 0:
+                inflater.inflate(R.menu.act_pager_0, menu);
+                break;
+            case 1:
+                inflater.inflate(R.menu.act_pager_1, menu);
+                break;
+            case 2:
+                if (canTwoOwnMenu) {
+                    inflater.inflate(R.menu.act_pager_2, menu);
+                }
+                break;
+            case 3:
+                inflater.inflate(R.menu.act_pager_3, menu);
+                break;
+        }
+
+    }
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        Log.d(getTAG(), "onPrepareOptionsMenu: " + menu);
+    }
 }

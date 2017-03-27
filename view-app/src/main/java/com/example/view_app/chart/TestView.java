@@ -1,6 +1,5 @@
 package com.example.view_app.chart;
 
-import android.animation.TypeEvaluator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,7 +9,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathMeasure;
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -22,12 +20,14 @@ import java.util.List;
 
 
 public class TestView extends View {
+
+    public static final String TAG = TestView.class.getSimpleName();
     // 最大值，纵坐标
     private final float maxValue = 100f;
     // 测试数据
-//    private float[] testDatas = { 55f, 38f, 100f, 44f, 31f, 22f, 9f, 19f, 50f, 78f, 62f, 51f, 45f, 66f, 79f, 50f, 33f,
-//            24f, 26f, 100f };
-    private float[] testDatas = { 60f, 30f, 57f, 41f, 88f, 70f, 100f };
+    private float[] testDatas = { 55f, 38f, 100f, 44f, 31f, 22f, 9f, 19f, 50f, 78f, 62f, 51f, 45f, 66f, 79f, 50f, 33f,
+            24f, 26f, 100f };
+//    private float[] testDatas = { 60f, 30f, 57f, 41f, 88f, 70f, 100f };
     //private float[] testDatas = { 60f, 55f};
 
     // 点记录
@@ -41,15 +41,19 @@ public class TestView extends View {
     // 辅助性画笔
     private Paint controllPaintA;
     private Paint controllPaintB;
-    private Path linePath;
 
     private PathMeasure mPathMeasure;
     private float[] mCurrentPosition = new float[2];
-    private float[] mPrePosition = new float[2];
     LinearGradient mGradient;
     int realWidth;
     int realHeight;
     int offSet;
+
+    private Path animPath = new Path();
+
+    // TODO: http://www.jianshu.com/p/c0d7ad796cee
+    private ValueAnimator valueAnimator;
+    private boolean isFirst = true;
 
     public TestView(Context context) {
         this(context, null);
@@ -62,7 +66,6 @@ public class TestView extends View {
     public TestView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         clicPath = new Path();
-        linePath = new Path();
         datas = new ArrayList<>();
         mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         originPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -104,7 +107,6 @@ public class TestView extends View {
 //        }
     }
 
-    private boolean animaFirst = true;
     @Override
     protected void onDraw(Canvas canvas) {
         Log.d("onDraw: ", "onDraw");
@@ -113,7 +115,9 @@ public class TestView extends View {
         for (int i = 0; i < datas.size() - 1; i++) {
             Point startPoint = datas.get(i);
             Point endPoint = datas.get(i + 1);
-            if (i == 0) clicPath.moveTo(startPoint.x, startPoint.y);
+            if (i == 0) {
+                clicPath.moveTo(startPoint.x, startPoint.y);
+            }
 
             int controllA_X = (startPoint.x + endPoint.x) >> 1;
             int controllA_Y = startPoint.y;
@@ -131,79 +135,66 @@ public class TestView extends View {
             //=========================================================================
 
         }
-        // 封闭路径================================================================
+        // 封闭路径：若不手动封闭，默认会自动连接终点和起点================================
         clicPath.lineTo(datas.get(datas.size() - 1).x, realHeight);
         clicPath.lineTo(datas.get(0).x, realHeight);
         clicPath.lineTo(datas.get(0).x, datas.get(0).y);
         //=========================================================================
-
         canvas.drawPath(clicPath, mPaint);
 
-        if (animaFirst) {
-            linePath.moveTo(datas.get(0).x, datas.get(0).y);
-            mCurrentPosition[0] = datas.get(0).x;
-            mCurrentPosition[1] = datas.get(0).y;
-            animaFirst = false;
+        if (isFirst) {
+            animPath.reset();
+            animPath.moveTo(datas.get(0).x, datas.get(0).y);
+        } else {
+            animPath.lineTo(mCurrentPosition[0], mCurrentPosition[1]);
         }
-        else {
-            linePath.lineTo(mCurrentPosition[0], mCurrentPosition[1]);
-        }
-        canvas.drawPath(linePath, controllPaintA);
+        canvas.drawPath(animPath, controllPaintA);
     }
-    // TODO: http://www.jianshu.com/p/c0d7ad796cee
-    private ValueAnimator valueAnimator;
-    public void startAnima(long duration) {
+
+
+    public void startAnim(long duration) {
         if (valueAnimator != null && valueAnimator.isRunning()) {
             return;
         }
         mPathMeasure = new PathMeasure(clicPath, true);
 
-        final List<PointF> points = new ArrayList<>();
-        for (Point p : datas) {
-            points.add(new PointF(p.x,p.y));
-        }
-
-        valueAnimator = ValueAnimator.ofObject(new TypeEvaluator<PointF>() {
-            @Override
-            public PointF evaluate(float time, PointF start, PointF end) {
-                float timeLeft = 1.0f - time;
-                float x = timeLeft * timeLeft * timeLeft * (start.x) + 3 * timeLeft * timeLeft * time *
-                        (points.get(0).x) + 3 * timeLeft * time *
-                        time * (points.get(points.size()-1).x) + time * time * time * (end.x);
-                float y = timeLeft * timeLeft * timeLeft * (start.y) + 3 * timeLeft * timeLeft * time *
-                        (points.get(0).y) + 3 * timeLeft * time *
-                        time * (points.get(points.size()-1).y) + time * time * time * (end.y);
-                return new PointF(x,y);
-            }
-        }, points);
+        valueAnimator = ValueAnimator.ofFloat(mPathMeasure.getLength());
         valueAnimator.setDuration(duration);
         valueAnimator.setInterpolator(new DecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
 
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                PointF value = (PointF) animation.getAnimatedValue();
-                mCurrentPosition[0] = value.x;
-                mCurrentPosition[1] = value.y;
-                invalidate();
-                if (value.equals(points.get(points.size()-1))) {
+                isFirst = false;
+                float value = (Float) animation.getAnimatedValue();
+                mPathMeasure.getPosTan(value, mCurrentPosition, null);
+                postInvalidate();
+                if (mCurrentPosition[0] == datas.get(datas.size() - 1).x) {
+                    isFirst = true;
                     valueAnimator.cancel();
-                    animaFirst = true;
                 }
             }
         });
         valueAnimator.start();
     }
-
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            // 时间长短影响PathMeasure动画期间的取值，越短越不精准。
+            // 这里大于5s较合适。
+            startAnim(10000);
+        }
+    };
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus) {
         super.onWindowFocusChanged(hasWindowFocus);
-        startAnima(2000);
+        postDelayed(runnable, 400);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        getHandler().removeCallbacks(runnable);
         if (valueAnimator != null) {
             valueAnimator.cancel();
         }
