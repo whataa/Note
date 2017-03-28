@@ -1,1 +1,2 @@
 include ':picer', ':compat-app', ':matrixer', ':fragment-app', ':alarm-app', ':view-app'
+include ':support7Demos-app'
