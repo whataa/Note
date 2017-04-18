@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.example.view_app.touch.TouchGroupWrapper xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#88111111"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.example.view_app.touch.TouchGroup
+        android:background="#f0f0f0"
+        android:layout_margin="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.example.view_app.touch.TouchView
+            android:layout_margin="32dp"
+            android:background="#9889af5e"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.example.view_app.touch.TouchGroup>
+
+</com.example.view_app.touch.TouchGroupWrapper>
